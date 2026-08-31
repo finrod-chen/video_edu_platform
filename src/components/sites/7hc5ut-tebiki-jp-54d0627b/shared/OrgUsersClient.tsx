@@ -33,7 +33,7 @@ export function OrgUsersClient({
           <span className="text-tebiki-border">|</span>
           <span>
             可註冊用戶數： <strong className="text-[#2B2C2F]">2</strong>{" "}
-            <a href="#" className="text-tebiki-blue hover:underline">
+            <a href="#" className="text-brand hover:underline">
               增加您的合約帳戶
             </a>
           </span>
@@ -42,7 +42,7 @@ export function OrgUsersClient({
           <button className="rounded-lg border border-tebiki-border px-4 py-2 text-sm font-medium text-[#2B2C2F] hover:bg-tebiki-bg">
             使用 CSV 進行批量註冊
           </button>
-          <button className="rounded-lg bg-tebiki-blue px-4 py-2 text-sm font-bold text-white hover:bg-tebiki-blue-dark">
+          <button className="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
             註冊用戶
           </button>
         </div>
@@ -59,7 +59,7 @@ export function OrgUsersClient({
             className={cn(
               "-mb-px border-b-2 px-1 pb-3 text-sm transition-colors",
               tab === t.key
-                ? "border-tebiki-blue font-medium text-tebiki-blue"
+                ? "border-brand font-medium text-brand"
                 : "border-transparent text-[#5B6270] hover:text-[#2B2C2F]"
             )}
           >
@@ -77,7 +77,7 @@ export function OrgUsersClient({
           <input
             type="search"
             placeholder="使用者名稱"
-            className="w-full max-w-xs rounded-lg border border-tebiki-border py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-tebiki-blue/40"
+            className="w-full max-w-xs rounded-lg border border-tebiki-border py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
           />
         </label>
         <button className="ml-auto rounded-lg border border-tebiki-border px-4 py-2 text-sm font-medium text-[#2B2C2F] hover:bg-tebiki-bg">
@@ -107,7 +107,7 @@ export function OrgUsersClient({
                     </span>
                     <div>
                       <p className="text-xs text-[#8B93A1]">{m.role}</p>
-                      <p className="text-tebiki-blue">{m.name}</p>
+                      <p className="text-brand">{m.name}</p>
                     </div>
                   </div>
                 </td>

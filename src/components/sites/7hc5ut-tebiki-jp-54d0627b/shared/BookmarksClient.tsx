@@ -32,7 +32,7 @@ export function BookmarksClient({
             className={cn(
               "-mb-px border-b-2 px-1 pb-3 text-sm transition-colors",
               tab === t.key
-                ? "border-tebiki-blue font-medium text-tebiki-blue"
+                ? "border-brand font-medium text-brand"
                 : "border-transparent text-[#5B6270] hover:text-[#2B2C2F]"
             )}
           >

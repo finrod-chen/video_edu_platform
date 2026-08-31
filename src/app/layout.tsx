@@ -19,8 +19,8 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "tebiki",
-  description: "Video manual & SOP training platform clone",
+  title: "喜躍生醫影音訓練系統",
+  description: "喜躍生醫股份有限公司內部影音教育訓練與作業手冊管理系統",
 };
 
 export default function RootLayout({

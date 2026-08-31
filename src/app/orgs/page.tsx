@@ -25,7 +25,7 @@ export default async function OrgInfoPage() {
           </div>
         ))}
       </div>
-      <button className="mt-8 rounded-lg bg-tebiki-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-tebiki-blue-dark">
+      <button className="mt-8 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark">
         編輯組織資訊
       </button>
     </OrgSettingsShell>

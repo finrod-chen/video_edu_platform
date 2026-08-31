@@ -16,7 +16,7 @@ export function LoginForm() {
           id="login-id"
           type="text"
           placeholder="輸入您的電子郵件地址或 ID"
-          className="w-full rounded-lg border border-tebiki-border px-3 py-2.5 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-tebiki-blue/40"
+          className="w-full rounded-lg border border-tebiki-border px-3 py-2.5 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
         />
       </div>
       <div>
@@ -27,7 +27,7 @@ export function LoginForm() {
           <input
             id="login-password"
             type={showPassword ? "text" : "password"}
-            className="w-full rounded-lg border border-tebiki-border px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-tebiki-blue/40"
+            className="w-full rounded-lg border border-tebiki-border px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
           />
           <button
             type="button"
@@ -42,7 +42,7 @@ export function LoginForm() {
 
       <button
         type="submit"
-        className="w-full rounded-lg bg-tebiki-blue py-2.5 text-sm font-bold text-white hover:bg-tebiki-blue-dark"
+        className="w-full rounded-lg bg-brand py-2.5 text-sm font-bold text-white hover:bg-brand-dark"
       >
         登入
       </button>

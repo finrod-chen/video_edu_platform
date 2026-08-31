@@ -33,7 +33,7 @@ export default async function OrgReportsPage() {
     <DashboardShell activeKey="orgReports" breadcrumb={["首頁", "組織報告"]}>
       <h1 className="mb-6 flex items-center gap-2 text-xl font-bold text-[#2B2C2F]">
         組織報告
-        <a href="https://help.tebiki.jp" target="_blank" rel="noreferrer" className="text-sm font-normal text-tebiki-blue hover:underline">
+        <a href="#" target="_blank" rel="noreferrer" className="text-sm font-normal text-brand hover:underline">
           （幫助）
         </a>
       </h1>
@@ -67,7 +67,7 @@ export default async function OrgReportsPage() {
               <input
                 type="search"
                 placeholder="輸入相關資料夾名稱或課程標題"
-                className="w-full rounded-lg border border-tebiki-border py-2 pl-9 pr-24 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-tebiki-blue/40"
+                className="w-full rounded-lg border border-tebiki-border py-2 pl-9 pr-24 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
               />
               <button className="absolute right-2 rounded-md bg-tebiki-bg px-3 py-1 text-xs font-medium text-[#5B6270]">進階搜尋</button>
             </label>
@@ -112,7 +112,7 @@ export default async function OrgReportsPage() {
             ) : (
               <p className="mb-3 text-xs text-[#8B93A1]">沒有數據</p>
             )}
-            <a href={rankings[0].href} className="text-sm text-tebiki-blue hover:underline">
+            <a href={rankings[0].href} className="text-sm text-brand hover:underline">
               顯示更多 ›
             </a>
           </section>
@@ -123,7 +123,7 @@ export default async function OrgReportsPage() {
                 <h3 className="text-sm font-bold text-[#2B2C2F]">{r.title}</h3>
               </div>
               <p className="mb-3 text-xs text-[#8B93A1]">期限：最近 30 天</p>
-              <a href={r.href} className="text-sm text-tebiki-blue hover:underline">
+              <a href={r.href} className="text-sm text-brand hover:underline">
                 顯示更多 ›
               </a>
             </section>

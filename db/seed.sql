@@ -1,10 +1,12 @@
--- Demo seed data — clearly fictional, matches the placeholder identity
--- already used in src/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/mock-data.ts.
--- Safe to run in dev/staging. Do not run against a database that already
--- holds real org data.
+-- Demo seed data for 喜躍生醫影音訓練系統.
+-- The organization row is the real, authorized tenant this internal system
+-- is built for. Individual users below are placeholder accounts — replace
+-- with real staff via the 使用者管理 (org/users) screen or your own import,
+-- rather than committing real employee PII into this file.
+-- Safe to run in dev/staging.
 
 INSERT INTO organizations (id, name, plan_type, video_quality, translation_language) VALUES
-  (1, '示例科技股份有限公司', '入口 計劃', '始終保持高品質', '所有語言')
+  (1, '喜躍生醫股份有限公司', '內部訓練系統', '始終保持高品質', '繁體中文')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 INSERT INTO users (id, org_id, name, email, role, avatar_color, status) VALUES

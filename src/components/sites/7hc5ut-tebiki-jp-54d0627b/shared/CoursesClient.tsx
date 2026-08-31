@@ -31,11 +31,11 @@ export function CoursesClient({
       <div className="mb-4 flex items-center justify-between">
         <h1 className="flex items-center gap-2 text-xl font-bold text-[#2B2C2F]">
           課程
-          <a href="https://help.tebiki.jp" target="_blank" rel="noreferrer" className="text-[#8B93A1]">
+          <a href="#" target="_blank" rel="noreferrer" className="text-[#8B93A1]">
             <SupportIcon className="h-4 w-4" />
           </a>
         </h1>
-        <button className="text-sm font-medium text-tebiki-blue hover:underline">編輯課程規劃</button>
+        <button className="text-sm font-medium text-brand hover:underline">編輯課程規劃</button>
       </div>
 
       <div className="rounded-xl border border-tebiki-border bg-white">
@@ -47,7 +47,7 @@ export function CoursesClient({
               className={cn(
                 "-mb-px flex items-center gap-1.5 border-b-2 px-1 pb-3 text-sm transition-colors",
                 tab === t.key
-                  ? "border-tebiki-blue font-medium text-tebiki-blue"
+                  ? "border-brand font-medium text-brand"
                   : "border-transparent text-[#5B6270] hover:text-[#2B2C2F]"
               )}
             >

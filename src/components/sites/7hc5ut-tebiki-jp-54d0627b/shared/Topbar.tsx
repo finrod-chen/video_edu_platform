@@ -37,7 +37,7 @@ export async function Topbar({ breadcrumb }: { breadcrumb: string[] }) {
         <button
           type="button"
           aria-label="翻譯"
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-tebiki-blue/10 text-tebiki-blue hover:bg-tebiki-blue/20"
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-brand hover:bg-brand/20"
         >
           <TranslateIcon className="h-4 w-4" />
         </button>
@@ -46,8 +46,8 @@ export async function Topbar({ breadcrumb }: { breadcrumb: string[] }) {
           <SearchIcon className="pointer-events-none absolute left-3 h-4 w-4 text-[#8B93A1]" />
           <input
             type="search"
-            placeholder="搜尋 tebiki"
-            className="w-64 rounded-lg border-0 bg-[#F5F6F8] py-2 pl-9 pr-3 text-sm text-[#2B2C2F] placeholder:text-[#8B93A1] focus:outline-none focus:ring-2 focus:ring-tebiki-blue/40"
+            placeholder="搜尋系統內容"
+            className="w-64 rounded-lg border-0 bg-[#F5F6F8] py-2 pl-9 pr-3 text-sm text-[#2B2C2F] placeholder:text-[#8B93A1] focus:outline-none focus:ring-2 focus:ring-brand/40"
           />
         </label>
 

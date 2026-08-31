@@ -30,7 +30,7 @@ export async function ManualListPage({
                   name="q"
                   defaultValue={keyword}
                   placeholder="按關鍵字搜尋"
-                  className="w-full rounded-lg border border-tebiki-border bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-tebiki-blue/40"
+                  className="w-full rounded-lg border border-tebiki-border bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
                 />
               </label>
             </div>
@@ -38,7 +38,7 @@ export async function ManualListPage({
               <p className="mb-1 text-xs font-medium text-[#8B93A1]">最後更新者</p>
             </div>
           </div>
-          <button type="button" className="flex shrink-0 items-center gap-1.5 text-sm text-[#5B6270] hover:text-tebiki-blue">
+          <button type="button" className="flex shrink-0 items-center gap-1.5 text-sm text-[#5B6270] hover:text-brand">
             <SortIcon className="h-4 w-4" />
             最新
           </button>
@@ -59,7 +59,7 @@ export async function ManualListPage({
             <tbody>
               {manuals.map((m) => (
                 <tr key={m.id} className="border-t border-tebiki-border">
-                  <td className="px-6 py-3 text-tebiki-blue">{m.title}</td>
+                  <td className="px-6 py-3 text-brand">{m.title}</td>
                   <td className="px-6 py-3 text-[#5B6270]">{m.tags.join("、") || "—"}</td>
                   <td className="px-6 py-3 text-[#5B6270]">{m.updatedBy}</td>
                   <td className="px-6 py-3 text-[#8B93A1]">{m.updatedAt}</td>

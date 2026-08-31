@@ -31,7 +31,7 @@ export function MyPageClient({ user }: { user: TebikiUser }) {
             className={cn(
               "-mb-px border-b-2 px-1 pb-3 text-sm transition-colors",
               tab === t.key
-                ? "border-tebiki-blue font-medium text-tebiki-blue"
+                ? "border-brand font-medium text-brand"
                 : "border-transparent text-[#5B6270] hover:text-[#2B2C2F]"
             )}
           >
@@ -58,7 +58,7 @@ export function MyPageClient({ user }: { user: TebikiUser }) {
                   </div>
                 ))}
               </div>
-              <button className="mt-8 rounded-lg bg-tebiki-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-tebiki-blue-dark">
+              <button className="mt-8 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark">
                 編輯個人資料
               </button>
             </div>

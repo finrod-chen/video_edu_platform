@@ -12,7 +12,7 @@ export default async function TagsPage() {
     <DashboardShell activeKey="tags" breadcrumb={["首頁", "標籤"]}>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-[#2B2C2F]">標籤</h1>
-        <button className="flex items-center gap-1.5 rounded-lg bg-tebiki-blue px-4 py-2 text-sm font-bold text-white hover:bg-tebiki-blue-dark">
+        <button className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
           <PlusIcon className="h-4 w-4" />
           新標籤
         </button>
@@ -27,11 +27,11 @@ export default async function TagsPage() {
               <input
                 type="search"
                 placeholder="標籤名稱"
-                className="w-72 rounded-lg border border-tebiki-border bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-tebiki-blue/40"
+                className="w-72 rounded-lg border border-tebiki-border bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
               />
             </label>
           </div>
-          <button className="flex items-center gap-1.5 text-sm text-[#5B6270] hover:text-tebiki-blue">
+          <button className="flex items-center gap-1.5 text-sm text-[#5B6270] hover:text-brand">
             <SortIcon className="h-4 w-4" />
             標籤名稱：A 到 Z
           </button>

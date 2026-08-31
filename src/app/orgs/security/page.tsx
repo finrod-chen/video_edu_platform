@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TebikiLogo } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
+import { SiteLogo } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
 
 export default function OrgSecurityPage() {
   return (
@@ -11,7 +11,7 @@ export default function OrgSecurityPage() {
       }}
     >
       <div className="relative z-10 mx-auto max-w-xl px-8 py-16">
-        <TebikiLogo className="mb-8 h-8 [&_text]:fill-white [&_path]:fill-white" />
+        <SiteLogo className="mb-8 h-8 [&_text]:fill-white [&_path]:fill-white" />
         <h1 className="mb-4 text-4xl font-bold">找不到頁面</h1>
         <p className="mb-2 text-white/80">您要尋找的頁面已被刪除或 URL 不正確。</p>
         <p className="text-white/80">

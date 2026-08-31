@@ -11,7 +11,7 @@ export default async function GroupsPage() {
     <OrgSettingsShell active="使用者群組" breadcrumbExtra="使用者群組">
       <p className="mb-6 text-sm text-[#5B6270]">
         您可以對使用者群組使用存取限制功能。{" "}
-        <a href="https://help.tebiki.jp" target="_blank" rel="noreferrer" className="text-tebiki-blue hover:underline">
+        <a href="#" target="_blank" rel="noreferrer" className="text-brand hover:underline">
           （幫助）
         </a>
       </p>
@@ -36,7 +36,7 @@ export default async function GroupsPage() {
         )}
       </table>
       {groups.length === 0 && <div className="py-20 text-center text-sm text-[#8B93A1]">沒有數據</div>}
-      <button className="mt-6 rounded-lg bg-tebiki-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-tebiki-blue-dark">
+      <button className="mt-6 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark">
         新用戶群組
       </button>
     </OrgSettingsShell>

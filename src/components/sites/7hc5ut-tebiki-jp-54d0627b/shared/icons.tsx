@@ -1,21 +1,22 @@
 import { cn } from "@/lib/utils";
 
-export function TebikiLogo({ className }: { className?: string }) {
+export function SiteLogo({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 91 28"
+      viewBox="0 0 132 30"
       className={cn("h-7 w-auto", className)}
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="tebiki"
+      aria-label="喜躍生醫影音訓練系統"
     >
-      {/* simplified page/bookmark mark — brand color only, not a traced original asset */}
+      {/* original mark: a training-manual page with a folded corner + play button */}
       <path
-        d="M3 2.5A2.5 2.5 0 0 1 5.5 0h9A2.5 2.5 0 0 1 17 2.5v21.36a1.2 1.2 0 0 1-1.87 1L10 20.8l-5.13 3.97a1.2 1.2 0 0 1-1.87-1V2.5Z"
-        fill="#1A8CFF"
+        d="M6 1h9l6 6v18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2Z"
+        fill="#38761D"
       />
-      <path d="M9.3 7.2 13 10l-3.7 2.8V7.2Z" fill="#fff" />
-      <text x="24" y="20" fontFamily="Noto Sans JP, sans-serif" fontWeight="700" fontSize="17" fill="#1A2733">
-        tebiki
+      <path d="M15 1l6 6h-4a2 2 0 0 1-2-2V1Z" fill="#5C9A3A" />
+      <path d="M10.5 12.5 18 17l-7.5 4.5v-9Z" fill="#fff" />
+      <text x="34" y="21" fontFamily="Noto Sans JP, sans-serif" fontWeight="700" fontSize="16" fill="#1A2733">
+        喜躍生醫
       </text>
     </svg>
   );

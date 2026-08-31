@@ -15,7 +15,7 @@ import {
   ReportIcon,
   SupportIcon,
   TagIcon,
-  TebikiLogo,
+  SiteLogo,
 } from "./icons";
 
 interface NavItem {
@@ -55,15 +55,15 @@ export function Sidebar({ activeKey }: { activeKey: NavItemKey | null }) {
   return (
     <aside className="hidden md:flex w-[216px] shrink-0 flex-col border-r border-tebiki-border bg-white h-screen sticky top-0">
       <div className="px-6 pt-6 pb-4">
-        <Link href="/" aria-label="tebiki 首頁">
-          <TebikiLogo />
+        <Link href="/" aria-label="喜躍生醫影音訓練系統 首頁">
+          <SiteLogo />
         </Link>
       </div>
 
       <div className="px-4 pb-4">
         <Link
           href="/manuals/new"
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-tebiki-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-tebiki-blue-dark transition-colors"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark transition-colors"
         >
           <PlusIcon className="h-4 w-4" />
           建立
@@ -81,7 +81,7 @@ export function Sidebar({ activeKey }: { activeKey: NavItemKey | null }) {
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-tebiki-bg",
-                    isActive ? "text-tebiki-blue font-medium" : "text-[#2B2C2F]"
+                    isActive ? "text-brand font-medium" : "text-[#2B2C2F]"
                   )}
                 >
                   <Icon className="h-[18px] w-[18px]" />
@@ -97,7 +97,7 @@ export function Sidebar({ activeKey }: { activeKey: NavItemKey | null }) {
                             href={child.href}
                             className={cn(
                               "flex items-center gap-1 rounded-md px-2 py-1.5 text-sm hover:bg-tebiki-bg",
-                              childActive ? "text-tebiki-blue font-medium" : "text-[#5B6270]"
+                              childActive ? "text-brand font-medium" : "text-[#5B6270]"
                             )}
                           >
                             <ChevronRightIcon className="h-3 w-3" />
@@ -125,7 +125,7 @@ export function Sidebar({ activeKey }: { activeKey: NavItemKey | null }) {
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-tebiki-bg",
-                    isActive ? "text-tebiki-blue font-medium" : "text-[#2B2C2F]"
+                    isActive ? "text-brand font-medium" : "text-[#2B2C2F]"
                   )}
                 >
                   <Icon className="h-[18px] w-[18px]" />
