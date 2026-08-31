@@ -2,21 +2,33 @@ import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/sha
 import { mockOrg } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/mock-data";
 import { SearchIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
 import { VisitorChart } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/root-8a5edab2/VisitorChart";
+import { getOrg } from "@/lib/queries/org";
+import { getReportSummary, getUserAccessRanking, getVisitorSeries } from "@/lib/queries/reports";
+import { CURRENT_ORG_ID } from "@/lib/current-viewer";
 
-const stats = [
-  { label: "手動觀看時間", value: "0", suffix: "h" },
-  { label: "課程", value: "0" },
-  { label: "手冊", value: "0" },
-  { label: "使用者", value: "1" },
-];
+export const dynamic = "force-dynamic";
 
-const rankings = [
-  { title: "用戶訪問排名", href: "/reports/orgs/user_accesses" },
-  { title: "手動訪問排名", href: "/reports/orgs/manual_accesses" },
-  { title: "課程訪問排名", href: "/reports/orgs/course_accesses" },
-];
+export default async function OrgReportsPage() {
+  const [org, summary, series, userRanking] = await Promise.all([
+    getOrg(CURRENT_ORG_ID),
+    getReportSummary(CURRENT_ORG_ID),
+    getVisitorSeries(CURRENT_ORG_ID, 30),
+    getUserAccessRanking(CURRENT_ORG_ID),
+  ]);
 
-export default function OrgReportsPage() {
+  const stats = [
+    { label: "手動觀看時間", value: String(summary.manualWatchHours), suffix: "h" },
+    { label: "課程", value: String(summary.courseCount) },
+    { label: "手冊", value: String(summary.manualCount) },
+    { label: "使用者", value: String(summary.userCount) },
+  ];
+
+  const rankings = [
+    { title: "用戶訪問排名", href: "/reports/orgs/user_accesses" },
+    { title: "手動訪問排名", href: "/reports/orgs/manual_accesses" },
+    { title: "課程訪問排名", href: "/reports/orgs/course_accesses" },
+  ];
+
   return (
     <DashboardShell activeKey="orgReports" breadcrumb={["首頁", "組織報告"]}>
       <h1 className="mb-6 flex items-center gap-2 text-xl font-bold text-[#2B2C2F]">
@@ -31,7 +43,6 @@ export default function OrgReportsPage() {
           <section className="rounded-xl border border-tebiki-border bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-bold text-[#2B2C2F]">獨立訪客和觀看時間</h2>
-              <span className="text-xs text-[#8B93A1]">週期：2026/8/1 - 2026/8/30</span>
             </div>
             <div className="mb-4 flex items-center justify-between">
               <select className="rounded-lg border border-tebiki-border px-3 py-1.5 text-sm">
@@ -45,7 +56,7 @@ export default function OrgReportsPage() {
               <span>獨立訪客</span>
               <span>觀看時間</span>
             </div>
-            <VisitorChart />
+            <VisitorChart series={series} />
           </section>
 
           <section className="rounded-xl border border-tebiki-border bg-white p-6">
@@ -70,7 +81,7 @@ export default function OrgReportsPage() {
 
         <aside className="space-y-4">
           <section className="rounded-xl border border-tebiki-border bg-white p-6">
-            <p className="mb-1 text-sm font-bold text-[#2B2C2F]">{mockOrg.name}</p>
+            <p className="mb-1 text-sm font-bold text-[#2B2C2F]">{org?.name ?? mockOrg.name}</p>
             <p className="mb-4 text-xs text-[#8B93A1]">週期：所有時間</p>
             <div className="grid grid-cols-2 gap-y-4 text-center">
               {stats.map((s) => (
@@ -85,12 +96,33 @@ export default function OrgReportsPage() {
             </div>
           </section>
 
-          {rankings.map((r) => (
+          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+            <div className="mb-1 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[#2B2C2F]">用戶訪問排名</h3>
+            </div>
+            {userRanking.length > 0 ? (
+              <ul className="mb-3 space-y-1.5 text-sm">
+                {userRanking.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between">
+                    <span className="text-[#2B2C2F]">{r.label}</span>
+                    <span className="text-[#8B93A1]">{r.value}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mb-3 text-xs text-[#8B93A1]">沒有數據</p>
+            )}
+            <a href={rankings[0].href} className="text-sm text-tebiki-blue hover:underline">
+              顯示更多 ›
+            </a>
+          </section>
+
+          {rankings.slice(1).map((r) => (
             <section key={r.title} className="rounded-xl border border-tebiki-border bg-white p-6">
               <div className="mb-1 flex items-center justify-between">
                 <h3 className="text-sm font-bold text-[#2B2C2F]">{r.title}</h3>
               </div>
-              <p className="mb-3 text-xs text-[#8B93A1]">期限：2026.08.01 - 2026.08.30</p>
+              <p className="mb-3 text-xs text-[#8B93A1]">期限：最近 30 天</p>
               <a href={r.href} className="text-sm text-tebiki-blue hover:underline">
                 顯示更多 ›
               </a>

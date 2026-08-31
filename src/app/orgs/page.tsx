@@ -1,15 +1,20 @@
 import { OrgSettingsShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgSettingsShell";
-import { mockOrg } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/mock-data";
+import { getOrg } from "@/lib/queries/org";
+import { CURRENT_ORG_ID } from "@/lib/current-viewer";
 
-const fields = [
-  { label: "公司/部門名稱", value: mockOrg.name },
-  { label: "計劃類型", value: mockOrg.planType },
-  { label: "視訊品質", value: mockOrg.videoQuality },
-  { label: "翻譯語言", value: mockOrg.translationLanguage },
-  { label: "技術詞典", value: "CSV 尚未上傳。" },
-];
+export const dynamic = "force-dynamic";
 
-export default function OrgInfoPage() {
+export default async function OrgInfoPage() {
+  const org = await getOrg(CURRENT_ORG_ID);
+
+  const fields = [
+    { label: "公司/部門名稱", value: org?.name ?? "—" },
+    { label: "計劃類型", value: org?.planType ?? "—" },
+    { label: "視訊品質", value: org?.videoQuality ?? "—" },
+    { label: "翻譯語言", value: org?.translationLanguage ?? "—" },
+    { label: "技術詞典", value: "CSV 尚未上傳。" },
+  ];
+
   return (
     <OrgSettingsShell active="組織" breadcrumbExtra="設定">
       <div className="divide-y divide-tebiki-border">

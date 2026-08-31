@@ -1,7 +1,13 @@
 import { DashboardShell, EmptyState } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
 import { PlusIcon, SearchIcon, SortIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
+import { getTags } from "@/lib/queries/tags";
+import { CURRENT_ORG_ID } from "@/lib/current-viewer";
 
-export default function TagsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function TagsPage() {
+  const tags = await getTags(CURRENT_ORG_ID);
+
   return (
     <DashboardShell activeKey="tags" breadcrumb={["首頁", "標籤"]}>
       <div className="mb-4 flex items-center justify-between">
@@ -39,8 +45,19 @@ export default function TagsPage() {
               <th className="px-6 py-3 font-medium">操作</th>
             </tr>
           </thead>
+          {tags.length > 0 && (
+            <tbody>
+              {tags.map((tag) => (
+                <tr key={tag.id} className="border-t border-tebiki-border">
+                  <td className="px-6 py-3 text-[#2B2C2F]">{tag.name}</td>
+                  <td className="px-6 py-3 text-[#5B6270]">{tag.manualCount}</td>
+                  <td className="px-6 py-3 text-[#8B93A1]">···</td>
+                </tr>
+              ))}
+            </tbody>
+          )}
         </table>
-        <EmptyState title="沒有數據" />
+        {tags.length === 0 && <EmptyState title="沒有數據" />}
       </div>
     </DashboardShell>
   );

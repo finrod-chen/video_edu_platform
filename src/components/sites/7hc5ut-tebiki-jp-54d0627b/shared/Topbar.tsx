@@ -7,8 +7,14 @@ import {
   TaskIcon,
   TranslateIcon,
 } from "./icons";
+import { getUser } from "@/lib/queries/users";
+import { CURRENT_USER_ID } from "@/lib/current-viewer";
 
-export function Topbar({ breadcrumb }: { breadcrumb: string[] }) {
+export async function Topbar({ breadcrumb }: { breadcrumb: string[] }) {
+  // Falls back to the mock identity if the DB is unreachable (e.g. at
+  // build time, before a Docker image's runtime .env is mounted) so a
+  // transient DB issue never takes down page rendering just for the avatar.
+  const user = (await getUser(CURRENT_USER_ID).catch(() => null)) ?? mockUser;
   return (
     <header className="flex h-14 items-center justify-between border-b border-tebiki-border bg-white px-6">
       <div className="flex items-center gap-2 text-sm text-[#5B6270]">
@@ -65,9 +71,9 @@ export function Topbar({ breadcrumb }: { breadcrumb: string[] }) {
           href="/mypage"
           aria-label="帳戶設定"
           className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
-          style={{ backgroundColor: mockUser.avatarColor }}
+          style={{ backgroundColor: user.avatarColor }}
         >
-          {mockUser.avatarInitial}
+          {user.avatarInitial}
         </Link>
       </div>
     </header>

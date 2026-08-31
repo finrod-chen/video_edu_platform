@@ -1,6 +1,8 @@
 import { OrgSettingsShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgSettingsShell";
 import { SearchIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
 
+export const dynamic = "force-dynamic";
+
 export default function ExportsPage() {
   return (
     <OrgSettingsShell active="下載" breadcrumbExtra="下載">
