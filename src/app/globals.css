@@ -10,6 +10,13 @@
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
   --font-heading: var(--font-sans);
+  --font-tebiki: var(--font-noto-sans-jp), "Noto Sans JP", ui-sans-serif, sans-serif;
+  --color-tebiki-blue: var(--tebiki-blue);
+  --color-tebiki-blue-dark: var(--tebiki-blue-dark);
+  --color-tebiki-border: var(--tebiki-border);
+  --color-tebiki-bg: var(--tebiki-bg);
+  --color-tebiki-text: var(--tebiki-text);
+  --color-tebiki-text-muted: var(--tebiki-text-muted);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -81,6 +88,14 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* tebiki design tokens (extracted via getComputedStyle from 7hc5ut.tebiki.jp) */
+  --tebiki-blue: #1a8cff;
+  --tebiki-blue-dark: #178cff;
+  --tebiki-border: #e8ebf1;
+  --tebiki-bg: #f7f8fa;
+  --tebiki-text: #2b2c2f;
+  --tebiki-text-muted: #8b93a1;
 }
 
 .dark {
