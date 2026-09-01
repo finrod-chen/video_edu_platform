@@ -29,10 +29,16 @@ App 本身**不含任何資料庫密碼**——所有連線資訊都在部署時
 /docker/video_edu_platform/
 ```
 
-把以下兩個檔案放進這個資料夾：
+把以下檔案/資料夾放進這個資料夾：
 
 1. `docker-compose.prod.yml`（repo 根目錄下，直接複製過去）
 2. `.env`（下一步自己建立，**不要**把這個檔案 commit 進 git）
+3. `uploads/`（手動建立一個空資料夾，用來存手冊影片/縮圖，並開放寫入權限）：
+   ```bash
+   mkdir -p /volume1/docker/video_edu_platform/uploads/tmp
+   chmod -R 777 /volume1/docker/video_edu_platform/uploads
+   ```
+   （容器內執行的使用者跟 NAS 主機的 UID 不一定對得上，`chmod 777` 是最簡單可行的做法；`docker-compose.prod.yml` 會把這個資料夾掛進容器的 `/app/uploads`，重建容器不會遺失已上傳的檔案。）
 
 ## 步驟 2：建立 `.env`
 
@@ -57,6 +63,9 @@ GOOGLE_CLIENT_SECRET=你的Client Secret
 AUTH_SECRET=用 openssl rand -base64 33 產生的隨機字串
 AUTH_TRUST_HOST=true
 AUTH_URL=https://video-edu.xiyuebiomed.com.tw
+
+# 手冊影片儲存目錄（對應步驟 1 建立的 uploads 資料夾，容器內路徑固定 /app/uploads）
+UPLOAD_DIR=/app/uploads
 ```
 
 | 變數 | 說明 | 是否必填 |
@@ -74,6 +83,7 @@ AUTH_URL=https://video-edu.xiyuebiomed.com.tw
 | `AUTH_SECRET` | 簽章/加密 session 用的隨機密鑰 | 必填 |
 | `AUTH_TRUST_HOST` | 在 Docker/反向代理後面必須設 `true`，否則登入 callback 會被拒絕 | 必填（固定填 `true`） |
 | `AUTH_URL` | 對外真實網址（例如 Cloudflare Tunnel 的網域），**沒設會導致登入導回 `http://0.0.0.0:3000/...` 並失敗** | 只要不是純 `localhost` 測試就必填 |
+| `UPLOAD_DIR` | 手冊影片/縮圖的儲存目錄，Docker 部署固定填 `/app/uploads`（對應掛進去的 volume） | 必填 |
 
 > **若 MySQL 也裝在同一台 NAS**：Container Manager 的容器預設跟 NAS 上其他套件（如 MariaDB）不在同一個 Docker network，`DB_HOST` 不能直接填 `localhost`。可行做法：
 > - 用 NAS 的區網 IP（例如 `192.168.1.5`）＋ 該 MySQL 服務對外開放的埠號，或
@@ -122,6 +132,16 @@ http://<NAS的IP>:<PORT>/api/health/db
 - 回傳其他連線錯誤（如 `ECONNREFUSED`）→ 檢查 `DB_HOST`/`DB_PORT` 是否可從容器內連通、MySQL 帳號權限是否允許該來源 IP 連線
 
 接著瀏覽首頁 `http://<NAS的IP>:<PORT>/` 確認頁面正常渲染。
+
+## 更新資料庫結構（既有部署要手動跑一次）
+
+`db/schema.sql` 加了手冊分段（`manual_steps`）功能後，**已經跑過舊版 `schema.sql` 的資料庫**不會自動套用新結構，需要手動執行一次：
+
+```bash
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/002_manual_steps.sql
+```
+
+新安裝（空資料庫）直接跑最新的 `db/schema.sql` 即可，不需要另外跑這份 migration。
 
 ## 更新版本（拉取新 image）
 

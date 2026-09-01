@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DashboardShell, EmptyState } from "./DashboardShell";
 import { SearchIcon, SortIcon } from "./icons";
 import { getManuals, type ManualStatus } from "@/lib/queries/manuals";
@@ -10,11 +11,17 @@ export async function ManualListPage({
 }: {
   breadcrumbLabel: string;
   status: ManualStatus;
-  searchParams?: Promise<{ q?: string }>;
+  searchParams?: Promise<{ q?: string; sort?: string }>;
 }) {
   const resolved = searchParams ? await searchParams : undefined;
   const keyword = resolved?.q?.trim();
-  const manuals = await getManuals(CURRENT_ORG_ID, status, keyword);
+  const order = resolved?.sort === "asc" ? "asc" : "desc";
+  const manuals = await getManuals(CURRENT_ORG_ID, status, keyword, order);
+
+  const nextSortHref = `?${new URLSearchParams({
+    ...(keyword ? { q: keyword } : {}),
+    sort: order === "asc" ? "desc" : "asc",
+  }).toString()}`;
 
   return (
     <DashboardShell activeKey="manuals" breadcrumb={["首頁", breadcrumbLabel]}>
@@ -38,10 +45,13 @@ export async function ManualListPage({
               <p className="mb-1 text-xs font-medium text-[#8B93A1]">最後更新者</p>
             </div>
           </div>
-          <button type="button" className="flex shrink-0 items-center gap-1.5 text-sm text-[#5B6270] hover:text-brand">
+          <Link
+            href={nextSortHref}
+            className="flex shrink-0 items-center gap-1.5 text-sm text-[#5B6270] hover:text-brand"
+          >
             <SortIcon className="h-4 w-4" />
-            最新
-          </button>
+            {order === "desc" ? "最新" : "最舊"}
+          </Link>
         </form>
 
         {manuals.length === 0 ? (
@@ -59,7 +69,11 @@ export async function ManualListPage({
             <tbody>
               {manuals.map((m) => (
                 <tr key={m.id} className="border-t border-tebiki-border">
-                  <td className="px-6 py-3 text-brand">{m.title}</td>
+                  <td className="px-6 py-3">
+                    <Link href={`/manuals/${m.id}/edit`} className="text-brand hover:underline">
+                      {m.title}
+                    </Link>
+                  </td>
                   <td className="px-6 py-3 text-[#5B6270]">{m.tags.join("、") || "—"}</td>
                   <td className="px-6 py-3 text-[#5B6270]">{m.updatedBy}</td>
                   <td className="px-6 py-3 text-[#8B93A1]">{m.updatedAt}</td>

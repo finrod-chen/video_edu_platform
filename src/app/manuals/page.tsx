@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export default function ManualsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string }>;
 }) {
   return <ManualListPage breadcrumbLabel="已發布手冊" status="published" searchParams={searchParams} />;
 }

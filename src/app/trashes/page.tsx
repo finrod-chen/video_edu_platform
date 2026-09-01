@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export default function TrashesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string }>;
 }) {
   return <ManualListPage breadcrumbLabel="垃圾" status="trashed" searchParams={searchParams} />;
 }

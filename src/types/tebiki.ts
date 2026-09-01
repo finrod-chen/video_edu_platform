@@ -14,12 +14,45 @@ export interface TebikiOrg {
   translationLanguage: string;
 }
 
+export type ManualStatus = "published" | "draft" | "trashed";
+
 export interface TebikiManual {
   id: string;
   title: string;
+  description?: string;
+  status?: ManualStatus;
   updatedBy: string;
   updatedAt: string;
   tags: string[];
+}
+
+export interface TebikiManualStep {
+  id: string;
+  manualId: string;
+  position: number;
+  title: string;
+  videoPath: string | null;
+  thumbnailPath: string | null;
+  durationSeconds: number | null;
+  captionsVtt: string | null;
+}
+
+export interface TebikiCourseFolder {
+  id: string;
+  name: string;
+  parentId: string | null;
+}
+
+export interface TebikiCourse {
+  id: string;
+  title: string;
+  folderId: string | null;
+}
+
+export interface TebikiCourseManual {
+  manualId: string;
+  title: string;
+  position: number;
 }
 
 export interface TebikiTask {

@@ -95,6 +95,11 @@ COPY --from=builder --chown=node:node /app/public ./public
 RUN mkdir .next
 RUN chown node:node .next
 
+# Persistent storage for user-uploaded manual videos/thumbnails (mounted as
+# a volume in docker-compose.prod.yml). Created here so it exists with the
+# right ownership even if no volume is mounted (e.g. local `docker run`).
+RUN mkdir -p uploads/tmp && chown -R node:node uploads
+
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=node:node /app/.next/standalone ./
