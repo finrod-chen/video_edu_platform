@@ -3,18 +3,28 @@ import { mockOrg } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/moc
 import { SearchIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
 import { VisitorChart } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/root-8a5edab2/VisitorChart";
 import { getOrg } from "@/lib/queries/org";
-import { getReportSummary, getUserAccessRanking, getVisitorSeries } from "@/lib/queries/reports";
+import {
+  getAcknowledgmentStats,
+  getAssignmentStats,
+  getQuizStats,
+  getReportSummary,
+  getUserAccessRanking,
+  getVisitorSeries,
+} from "@/lib/queries/reports";
 import { CURRENT_ORG_ID, requireEditor } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function CompanyReportsPage() {
   await requireEditor();
-  const [org, summary, series, userRanking] = await Promise.all([
+  const [org, summary, series, userRanking, ackStats, quizStats, assignmentStats] = await Promise.all([
     getOrg(CURRENT_ORG_ID),
     getReportSummary(CURRENT_ORG_ID),
     getVisitorSeries(CURRENT_ORG_ID, 30),
     getUserAccessRanking(CURRENT_ORG_ID),
+    getAcknowledgmentStats(CURRENT_ORG_ID),
+    getQuizStats(CURRENT_ORG_ID),
+    getAssignmentStats(CURRENT_ORG_ID),
   ]);
 
   const stats = [
@@ -22,12 +32,7 @@ export default async function CompanyReportsPage() {
     { label: "課程", value: String(summary.courseCount) },
     { label: "手冊", value: String(summary.manualCount) },
     { label: "使用者", value: String(summary.userCount) },
-  ];
-
-  const rankings = [
-    { title: "用戶訪問排名", href: "/reports/company/user_accesses" },
-    { title: "手動訪問排名", href: "/reports/company/manual_accesses" },
-    { title: "課程訪問排名", href: "/reports/company/course_accesses" },
+    { label: "已瞭解率", value: String(ackStats.rate), suffix: "%" },
   ];
 
   return (
@@ -102,7 +107,7 @@ export default async function CompanyReportsPage() {
               <h3 className="text-sm font-bold text-[#2B2C2F]">用戶訪問排名</h3>
             </div>
             {userRanking.length > 0 ? (
-              <ul className="mb-3 space-y-1.5 text-sm">
+              <ul className="mb-1 space-y-1.5 text-sm">
                 {userRanking.map((r) => (
                   <li key={r.id} className="flex items-center justify-between">
                     <span className="text-[#2B2C2F]">{r.label}</span>
@@ -111,24 +116,49 @@ export default async function CompanyReportsPage() {
                 ))}
               </ul>
             ) : (
-              <p className="mb-3 text-xs text-[#8B93A1]">沒有數據</p>
+              <p className="text-xs text-[#8B93A1]">沒有數據</p>
             )}
-            <a href={rankings[0].href} className="text-sm text-brand hover:underline">
-              顯示更多 ›
-            </a>
           </section>
 
-          {rankings.slice(1).map((r) => (
-            <section key={r.title} className="rounded-xl border border-tebiki-border bg-white p-6">
-              <div className="mb-1 flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[#2B2C2F]">{r.title}</h3>
+          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+            <h3 className="mb-3 text-sm font-bold text-[#2B2C2F]">測驗通過率</h3>
+            {quizStats.attemptCount > 0 ? (
+              <div className="grid grid-cols-2 gap-y-3 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-emerald-500">{quizStats.passRate}%</p>
+                  <p className="text-xs text-[#8B93A1]">通過率</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-500">{quizStats.averageScore}</p>
+                  <p className="text-xs text-[#8B93A1]">平均分數</p>
+                </div>
               </div>
-              <p className="mb-3 text-xs text-[#8B93A1]">期限：最近 30 天</p>
-              <a href={r.href} className="text-sm text-brand hover:underline">
-                顯示更多 ›
-              </a>
-            </section>
-          ))}
+            ) : (
+              <p className="text-xs text-[#8B93A1]">沒有數據</p>
+            )}
+          </section>
+
+          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+            <h3 className="mb-3 text-sm font-bold text-[#2B2C2F]">指派完成度</h3>
+            {assignmentStats.totalCount > 0 ? (
+              <ul className="space-y-1.5 text-sm">
+                <li className="flex items-center justify-between">
+                  <span className="text-[#2B2C2F]">已完成</span>
+                  <span className="text-[#8B93A1]">
+                    {assignmentStats.completedCount}/{assignmentStats.totalCount}
+                  </span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span className="text-[#2B2C2F]">逾期未完成</span>
+                  <span className={assignmentStats.overdueCount > 0 ? "text-red-600" : "text-[#8B93A1]"}>
+                    {assignmentStats.overdueCount}
+                  </span>
+                </li>
+              </ul>
+            ) : (
+              <p className="text-xs text-[#8B93A1]">沒有數據</p>
+            )}
+          </section>
         </aside>
       </div>
     </DashboardShell>

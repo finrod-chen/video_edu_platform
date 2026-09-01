@@ -1,6 +1,13 @@
 import type { RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { RankingEntry, ReportSummary, VisitorDataPoint } from "@/types/tebiki";
+import type {
+  AcknowledgmentStats,
+  AssignmentStats,
+  QuizStats,
+  RankingEntry,
+  ReportSummary,
+  VisitorDataPoint,
+} from "@/types/tebiki";
 
 interface DailyRow extends RowDataPacket {
   visit_date: string;
@@ -66,4 +73,76 @@ export async function getUserAccessRanking(orgId: number, limit = 5): Promise<Ra
     [orgId, limit]
   );
   return (rows as RankingRow[]).map((r) => ({ id: String(r.id), label: r.label, value: r.value }));
+}
+
+export async function getAcknowledgmentStats(orgId: number): Promise<AcknowledgmentStats> {
+  const [[possibleRows], [ackRows]] = await Promise.all([
+    db.query(
+      `SELECT
+         (SELECT COUNT(*) FROM manuals WHERE org_id = ? AND status = 'published') AS manual_count,
+         (SELECT COUNT(*) FROM users WHERE org_id = ? AND status = 'active') AS user_count`,
+      [orgId, orgId]
+    ),
+    db.query(
+      `SELECT COUNT(*) AS acknowledged_count
+       FROM manual_acknowledgments ma
+       JOIN manuals m ON m.id = ma.manual_id AND m.status = 'published'
+       JOIN users u ON u.id = ma.user_id AND u.status = 'active'
+       WHERE m.org_id = ?`,
+      [orgId]
+    ),
+  ]);
+
+  const possibleRow = (possibleRows as RowDataPacket[])[0];
+  const possibleCount = Number(possibleRow?.manual_count ?? 0) * Number(possibleRow?.user_count ?? 0);
+  const acknowledgedCount = Number((ackRows as RowDataPacket[])[0]?.acknowledged_count ?? 0);
+
+  return {
+    acknowledgedCount,
+    possibleCount,
+    rate: possibleCount > 0 ? Math.round((acknowledgedCount / possibleCount) * 100) : 0,
+  };
+}
+
+export async function getQuizStats(orgId: number): Promise<QuizStats> {
+  const [rows] = await db.query(
+    `SELECT COUNT(*) AS attempt_count, AVG(latest.score) AS avg_score, SUM(latest.passed) AS passed_count
+     FROM (
+       SELECT qa.score, qa.passed
+       FROM quiz_attempts qa
+       JOIN quizzes q ON q.id = qa.quiz_id AND q.org_id = ?
+       LEFT JOIN quiz_attempts newer
+         ON newer.quiz_id = qa.quiz_id AND newer.user_id = qa.user_id AND newer.submitted_at > qa.submitted_at
+       WHERE newer.id IS NULL
+     ) latest`,
+    [orgId]
+  );
+  const row = (rows as RowDataPacket[])[0];
+  const attemptCount = Number(row?.attempt_count ?? 0);
+  const passedCount = Number(row?.passed_count ?? 0);
+
+  return {
+    attemptCount,
+    passRate: attemptCount > 0 ? Math.round((passedCount / attemptCount) * 100) : 0,
+    averageScore: attemptCount > 0 ? Math.round(Number(row?.avg_score ?? 0)) : 0,
+  };
+}
+
+export async function getAssignmentStats(orgId: number): Promise<AssignmentStats> {
+  const [rows] = await db.query(
+    `SELECT
+       COUNT(*) AS total_count,
+       SUM(CASE WHEN ack.user_id IS NOT NULL THEN 1 ELSE 0 END) AS completed_count,
+       SUM(CASE WHEN ack.user_id IS NULL AND a.due_date IS NOT NULL AND a.due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue_count
+     FROM assignment_targets at
+     JOIN assignments a ON a.id = at.assignment_id AND a.org_id = ?
+     LEFT JOIN manual_acknowledgments ack ON ack.manual_id = a.manual_id AND ack.user_id = at.user_id`,
+    [orgId]
+  );
+  const row = (rows as RowDataPacket[])[0];
+  return {
+    totalCount: Number(row?.total_count ?? 0),
+    completedCount: Number(row?.completed_count ?? 0),
+    overdueCount: Number(row?.overdue_count ?? 0),
+  };
 }

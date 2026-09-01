@@ -152,6 +152,24 @@ export interface RankingEntry {
   value: number;
 }
 
+export interface AcknowledgmentStats {
+  acknowledgedCount: number;
+  possibleCount: number;
+  rate: number;
+}
+
+export interface QuizStats {
+  attemptCount: number;
+  passRate: number;
+  averageScore: number;
+}
+
+export interface AssignmentStats {
+  totalCount: number;
+  completedCount: number;
+  overdueCount: number;
+}
+
 export type NavItemKey =
   | "home"
   | "bookmarks"
