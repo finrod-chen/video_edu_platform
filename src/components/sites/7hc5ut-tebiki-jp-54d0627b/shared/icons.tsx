@@ -52,4 +52,5 @@ export {
   Eye as EyeIcon,
   EyeOff as EyeOffIcon,
   ClipboardList as AssignmentIcon,
+  ListChecks as QuizIcon,
 } from "lucide-react";

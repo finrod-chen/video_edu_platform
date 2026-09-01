@@ -13,6 +13,7 @@ import {
   ManualIcon,
   OrgIcon,
   PlusIcon,
+  QuizIcon,
   ReportIcon,
   SupportIcon,
   TagIcon,
@@ -44,6 +45,7 @@ const primaryNav: NavItem[] = [
   },
   { key: "tags", label: "標籤", href: "/tags", icon: TagIcon },
   { key: "assignments", label: "指派管理", href: "/assignments", icon: AssignmentIcon },
+  { key: "quizzes", label: "測驗管理", href: "/quizzes", icon: QuizIcon },
 ];
 
 const secondaryNav: NavItem[] = [
@@ -59,7 +61,9 @@ export function Sidebar({ activeKey, role }: { activeKey: NavItemKey | null; rol
   const visibleSecondaryNav = secondaryNav.filter(
     (item) => (item.key === "orgSettings" ? canSeeCompanySettings : canSeeReports)
   );
-  const visiblePrimaryNav = primaryNav.filter((item) => (item.key === "assignments" ? canCreate : true));
+  const visiblePrimaryNav = primaryNav.filter((item) =>
+    item.key === "assignments" || item.key === "quizzes" ? canCreate : true
+  );
 
   return (
     <aside className="hidden md:flex w-[216px] shrink-0 flex-col border-r border-tebiki-border bg-white h-screen sticky top-0">

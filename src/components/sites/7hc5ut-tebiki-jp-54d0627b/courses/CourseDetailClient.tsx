@@ -4,7 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDownIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
-import type { ManualStatus, TebikiCourse, TebikiCourseManual, TebikiManual } from "@/types/tebiki";
+import type {
+  ManualStatus,
+  TebikiCourse,
+  TebikiCourseManual,
+  TebikiManual,
+  TebikiQuiz,
+  TebikiQuizAttempt,
+} from "@/types/tebiki";
 
 const STATUS_LABEL: Record<ManualStatus, string> = {
   draft: "草稿",
@@ -19,6 +26,8 @@ export function CourseDetailClient({
   canManage,
   canPermanentlyDelete,
   acknowledgedManualIds,
+  quiz,
+  latestAttempt,
 }: {
   course: TebikiCourse;
   initialManuals: TebikiCourseManual[];
@@ -26,6 +35,8 @@ export function CourseDetailClient({
   canManage: boolean;
   canPermanentlyDelete: boolean;
   acknowledgedManualIds: string[];
+  quiz: TebikiQuiz | null;
+  latestAttempt: TebikiQuizAttempt | null;
 }) {
   const acknowledgedSet = new Set(acknowledgedManualIds);
   const router = useRouter();
@@ -163,6 +174,22 @@ export function CourseDetailClient({
           <p className="text-sm font-medium text-[#2B2C2F]">
             已完成 {acknowledgedSet.size}/{initialManuals.length} 手冊
           </p>
+        </div>
+      )}
+
+      {!canManage && quiz && (
+        <div className="flex items-center justify-between rounded-xl border border-tebiki-border bg-white p-4">
+          <p className="text-sm text-[#5B6270]">
+            {latestAttempt
+              ? `結業測驗結果：${latestAttempt.score}分（${latestAttempt.passed ? "已通過" : "未通過"}）`
+              : "完成本課程所有手冊後，可以前往結業測驗。"}
+          </p>
+          <Link
+            href={`/quizzes/${quiz.id}/take`}
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark"
+          >
+            前往測驗
+          </Link>
         </div>
       )}
 

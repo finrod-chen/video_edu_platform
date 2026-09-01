@@ -64,6 +64,28 @@ INSERT INTO assignment_targets (assignment_id, user_id) VALUES
   (1, 3)
 ON DUPLICATE KEY UPDATE assignment_id = VALUES(assignment_id);
 
+-- 測驗示例：一份手冊單元測驗、一份課程結業總測驗。
+INSERT INTO quizzes (id, org_id, scope, manual_id, course_id, title, pass_score, status, has_been_published, updated_by) VALUES
+  (1, 1, 'manual', 1, NULL, '新進人員教育訓練 SOP 測驗', 60, 'published', TRUE, 2),
+  (2, 1, 'course', NULL, 1, '第一週：基礎操作 結業測驗', 60, 'published', TRUE, 2);
+
+INSERT INTO quiz_questions (id, quiz_id, position, prompt) VALUES
+  (1, 1, 0, '新進人員報到當天，第一件事應該完成什麼？'),
+  (2, 2, 0, '完成本課程所有手冊後，建議接續做什麼？');
+
+INSERT INTO quiz_choices (question_id, position, label, is_correct) VALUES
+  (1, 0, '直接進入產線操作', FALSE),
+  (1, 1, '完成安全規範教育訓練', TRUE),
+  (1, 2, '先請假', FALSE),
+  (2, 0, '完成課程結業測驗', TRUE),
+  (2, 1, '跳過測驗直接上工', FALSE);
+
+INSERT INTO quiz_attempts (id, quiz_id, user_id, score, passed) VALUES
+  (1, 1, 3, 100, TRUE);
+
+INSERT INTO quiz_attempt_answers (attempt_id, question_id, choice_id) VALUES
+  (1, 1, 2);
+
 -- 30 days of clearly-fictional report data ending today
 INSERT INTO manual_view_daily (org_id, visit_date, visitor_count, watch_hours)
 SELECT 1, DATE_SUB(CURDATE(), INTERVAL n DAY), FLOOR(1 + RAND() * 4), ROUND(RAND() * 2, 2)

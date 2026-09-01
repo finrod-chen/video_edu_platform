@@ -85,6 +85,42 @@ export interface TebikiMyAssignment {
   completed: boolean;
 }
 
+export type QuizScope = "manual" | "course";
+
+export interface TebikiQuiz {
+  id: string;
+  scope: QuizScope;
+  manualId: string | null;
+  courseId: string | null;
+  title: string;
+  passScore: number;
+  status: ManualStatus;
+  hasBeenPublished: boolean;
+  updatedAt: string;
+}
+
+export interface TebikiQuizChoice {
+  id: string;
+  label: string;
+  isCorrect?: boolean;
+}
+
+export interface TebikiQuizQuestion {
+  id: string;
+  quizId: string;
+  position: number;
+  prompt: string;
+  choices: TebikiQuizChoice[];
+}
+
+export interface TebikiQuizAttempt {
+  id: string;
+  quizId: string;
+  score: number;
+  passed: boolean;
+  submittedAt: string;
+}
+
 export interface TebikiTag {
   id: string;
   name: string;
@@ -123,5 +159,6 @@ export type NavItemKey =
   | "manuals"
   | "tags"
   | "assignments"
+  | "quizzes"
   | "orgSettings"
   | "orgReports";
