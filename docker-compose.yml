@@ -16,7 +16,7 @@ services:
       - .env.local
       - .env
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/',r=>{process.exitCode=r.statusCode<500?0:1}).on('error',()=>{process.exitCode=1})\""]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -42,7 +42,7 @@ services:
       - /app/node_modules
       - /app/.next
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/',r=>{process.exitCode=r.statusCode<500?0:1}).on('error',()=>{process.exitCode=1})\""]
       interval: 30s
       timeout: 10s
       retries: 3
