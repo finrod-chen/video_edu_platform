@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS manual_steps (
   thumbnail_path VARCHAR(500) NULL,
   duration_seconds INT NULL,
   captions_vtt MEDIUMTEXT NULL,
+  caption_status ENUM('none','pending','done','failed') NOT NULL DEFAULT 'none',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,

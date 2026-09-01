@@ -1,12 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { uploadManualStepVideo } from "@/lib/upload-client";
-import type { TebikiManualStep } from "@/types/tebiki";
+import type { CaptionStatus, TebikiManualStep } from "@/types/tebiki";
 import {
   ChevronDownIcon,
   PlusIcon,
 } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
+
+const CAPTION_STATUS_LABEL: Record<CaptionStatus, string> = {
+  none: "",
+  pending: "字幕產生中…",
+  done: "字幕已就緒",
+  failed: "字幕產生失敗，可重試",
+};
 
 export function StepCard({
   manualId,
@@ -30,6 +37,29 @@ export function StepCard({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [captionStatus, setCaptionStatus] = useState<CaptionStatus>(step.captionStatus);
+
+  useEffect(() => {
+    setCaptionStatus(step.captionStatus);
+  }, [step.captionStatus]);
+
+  useEffect(() => {
+    if (captionStatus !== "pending") return;
+    const interval = setInterval(async () => {
+      const res = await fetch(`/api/manuals/${manualId}/steps/${step.id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.captionStatus !== "pending") {
+        setCaptionStatus(data.captionStatus);
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [captionStatus, manualId, step.id]);
+
+  async function handleGenerateCaptions() {
+    setCaptionStatus("pending");
+    await fetch(`/api/manuals/${manualId}/steps/${step.id}/captions`, { method: "POST" });
+  }
 
   async function handleFileSelected(file: File) {
     if (!file.type.startsWith("video/")) {
@@ -120,13 +150,26 @@ export function StepCard({
           className="w-full rounded-lg border border-tebiki-border px-3 py-2 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
         />
         {step.videoPath && (
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="self-start text-xs text-brand hover:underline"
-          >
-            重新上傳影片
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="text-xs text-brand hover:underline"
+            >
+              重新上傳影片
+            </button>
+            {captionStatus === "none" || captionStatus === "failed" ? (
+              <button
+                type="button"
+                onClick={handleGenerateCaptions}
+                className="text-xs text-brand hover:underline"
+              >
+                產生字幕
+              </button>
+            ) : (
+              <span className="text-xs text-[#8B93A1]">{CAPTION_STATUS_LABEL[captionStatus]}</span>
+            )}
+          </div>
         )}
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>

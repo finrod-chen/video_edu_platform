@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { DashboardShell, EmptyState } from "./DashboardShell";
 import { FolderManager } from "./FolderManager";
+import { BatchCaptionsButton } from "./BatchCaptionsButton";
 import { SearchIcon, SortIcon } from "./icons";
-import { getManuals, type ManualStatus } from "@/lib/queries/manuals";
+import { getManuals, getStepsNeedingCaptions, type ManualStatus } from "@/lib/queries/manuals";
 import { getFolders } from "@/lib/queries/folders";
 import { CURRENT_ORG_ID, getCurrentUser, isAdmin, isEditorOrAbove } from "@/lib/current-viewer";
 
@@ -31,9 +32,10 @@ export async function ManualListPage({
   const { role } = await getCurrentUser();
   const canManageFolders = isEditorOrAbove(role);
 
-  const [manuals, folders] = await Promise.all([
+  const [manuals, folders, captionBacklog] = await Promise.all([
     getManuals(CURRENT_ORG_ID, status, keyword, order, folderId),
     getFolders(CURRENT_ORG_ID),
+    canManageFolders ? getStepsNeedingCaptions(CURRENT_ORG_ID) : Promise.resolve([]),
   ]);
 
   const nextSortHref = `?${new URLSearchParams({
@@ -45,6 +47,9 @@ export async function ManualListPage({
   return (
     <DashboardShell activeKey="manuals" breadcrumb={["首頁", breadcrumbLabel]}>
       {canManageFolders && <FolderManager folders={folders} canDelete={isAdmin(role)} />}
+      {canManageFolders && captionBacklog.length > 0 && (
+        <BatchCaptionsButton pendingCount={captionBacklog.length} />
+      )}
 
       <div className="rounded-xl border border-tebiki-border bg-white">
         <form method="get" className="flex items-center justify-between gap-4 px-6 py-4">

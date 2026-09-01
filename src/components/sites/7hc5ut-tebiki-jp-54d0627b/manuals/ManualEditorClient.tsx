@@ -75,6 +75,7 @@ export function ManualEditorClient({
         thumbnailPath: null,
         durationSeconds: null,
         captionsVtt: null,
+        captionStatus: "none" as const,
       },
     ]);
   }
@@ -95,7 +96,17 @@ export function ManualEditorClient({
 
   function handleStepUploaded(stepId: string, videoPath: string, thumbnailPath?: string) {
     setSteps((prev) =>
-      prev.map((s) => (s.id === stepId ? { ...s, videoPath, thumbnailPath: thumbnailPath ?? s.thumbnailPath } : s))
+      prev.map((s) =>
+        s.id === stepId
+          ? {
+              ...s,
+              videoPath,
+              thumbnailPath: thumbnailPath ?? s.thumbnailPath,
+              captionsVtt: null,
+              captionStatus: "none",
+            }
+          : s
+      )
     );
   }
 

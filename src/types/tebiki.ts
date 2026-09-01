@@ -28,6 +28,8 @@ export interface TebikiManual {
   tags: string[];
 }
 
+export type CaptionStatus = "none" | "pending" | "done" | "failed";
+
 export interface TebikiManualStep {
   id: string;
   manualId: string;
@@ -37,6 +39,7 @@ export interface TebikiManualStep {
   thumbnailPath: string | null;
   durationSeconds: number | null;
   captionsVtt: string | null;
+  captionStatus: CaptionStatus;
 }
 
 export interface TebikiFolder {

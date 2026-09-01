@@ -52,7 +52,17 @@ export function ManualViewerClient({
                     ? `/api/media/manuals/${manual.id}/steps/${activeStep.id}/thumbnail`
                     : undefined
                 }
-              />
+              >
+                {activeStep.captionStatus === "done" && (
+                  <track
+                    kind="captions"
+                    srcLang="zh-Hant"
+                    label="繁體中文"
+                    src={`/api/media/manuals/${manual.id}/steps/${activeStep.id}/captions.vtt`}
+                    default
+                  />
+                )}
+              </video>
             ) : (
               <div className="flex aspect-video items-center justify-center text-sm text-white/60">
                 此步驟尚未上傳影片

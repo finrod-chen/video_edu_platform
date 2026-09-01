@@ -154,6 +154,7 @@ interface StepRow extends RowDataPacket {
   thumbnail_path: string | null;
   duration_seconds: number | null;
   captions_vtt: string | null;
+  caption_status: "none" | "pending" | "done" | "failed";
 }
 
 function mapStep(r: StepRow): TebikiManualStep {
@@ -166,14 +167,15 @@ function mapStep(r: StepRow): TebikiManualStep {
     thumbnailPath: r.thumbnail_path,
     durationSeconds: r.duration_seconds,
     captionsVtt: r.captions_vtt,
+    captionStatus: r.caption_status,
   };
 }
 
+const STEP_SELECT =
+  "SELECT id, manual_id, position, title, video_path, thumbnail_path, duration_seconds, captions_vtt, caption_status FROM manual_steps";
+
 export async function getManualSteps(manualId: number): Promise<TebikiManualStep[]> {
-  const [rows] = await db.query(
-    "SELECT id, manual_id, position, title, video_path, thumbnail_path, duration_seconds, captions_vtt FROM manual_steps WHERE manual_id = ? ORDER BY position ASC",
-    [manualId]
-  );
+  const [rows] = await db.query(`${STEP_SELECT} WHERE manual_id = ? ORDER BY position ASC`, [manualId]);
   return (rows as StepRow[]).map(mapStep);
 }
 
@@ -181,10 +183,7 @@ export async function getManualStepById(
   manualId: number,
   stepId: number
 ): Promise<TebikiManualStep | null> {
-  const [rows] = await db.query(
-    "SELECT id, manual_id, position, title, video_path, thumbnail_path, duration_seconds, captions_vtt FROM manual_steps WHERE id = ? AND manual_id = ?",
-    [stepId, manualId]
-  );
+  const [rows] = await db.query(`${STEP_SELECT} WHERE id = ? AND manual_id = ?`, [stepId, manualId]);
   const row = (rows as StepRow[])[0];
   return row ? mapStep(row) : null;
 }
@@ -213,7 +212,8 @@ export async function updateManualStep(
     videoPath?: string;
     thumbnailPath?: string;
     durationSeconds?: number;
-    captionsVtt?: string;
+    captionsVtt?: string | null;
+    captionStatus?: "none" | "pending" | "done" | "failed";
   }
 ): Promise<void> {
   const columnMap: Record<string, string> = {
@@ -222,15 +222,20 @@ export async function updateManualStep(
     thumbnailPath: "thumbnail_path",
     durationSeconds: "duration_seconds",
     captionsVtt: "captions_vtt",
+    captionStatus: "caption_status",
   };
   const sets: string[] = [];
-  const params: (string | number)[] = [];
+  const params: (string | number | null)[] = [];
   for (const [key, column] of Object.entries(columnMap)) {
-    const value = (fields as Record<string, string | number | undefined>)[key];
+    const value = (fields as Record<string, string | number | null | undefined>)[key];
     if (value !== undefined) {
       sets.push(`${column} = ?`);
       params.push(value);
     }
+  }
+  // A freshly-uploaded video invalidates any previous transcription for this step.
+  if (fields.videoPath !== undefined && fields.captionsVtt === undefined && fields.captionStatus === undefined) {
+    sets.push("captions_vtt = NULL", "caption_status = 'none'");
   }
   if (sets.length === 0) return;
   params.push(stepId);
@@ -239,6 +244,24 @@ export async function updateManualStep(
 
 export async function deleteManualStep(stepId: number): Promise<void> {
   await db.execute("DELETE FROM manual_steps WHERE id = ?", [stepId]);
+}
+
+/** Steps with an uploaded video but no caption attempt yet -- used to seed a batch backfill run. */
+export async function getStepsNeedingCaptions(
+  orgId: number
+): Promise<{ manualId: number; stepId: number }[]> {
+  const [rows] = await db.query(
+    `SELECT s.manual_id, s.id AS step_id
+     FROM manual_steps s
+     JOIN manuals m ON m.id = s.manual_id
+     WHERE m.org_id = ? AND s.video_path IS NOT NULL AND s.caption_status = 'none'
+     ORDER BY s.manual_id ASC, s.position ASC`,
+    [orgId]
+  );
+  return (rows as RowDataPacket[]).map((r) => ({
+    manualId: Number(r.manual_id),
+    stepId: Number(r.step_id),
+  }));
 }
 
 export async function reorderManualSteps(

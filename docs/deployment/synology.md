@@ -72,6 +72,9 @@ UPLOAD_DIR=/app/uploads
 GMAIL_SMTP_USER=your-account@gmail.com
 GMAIL_SMTP_PASSWORD=你的應用程式密碼
 GMAIL_SMTP_FROM=your-account@gmail.com
+
+# OpenAI Whisper（手冊編輯頁「產生字幕」/「批次補字幕」按鈕，選填）
+OPENAI_API_KEY=你的OpenAI API Key
 ```
 
 | 變數 | 說明 | 是否必填 |
@@ -93,6 +96,7 @@ GMAIL_SMTP_FROM=your-account@gmail.com
 | `GMAIL_SMTP_USER` | 寄件 Gmail 帳號 | 選填（不設定則指派通知信不會寄出，其餘功能不受影響） |
 | `GMAIL_SMTP_PASSWORD` | Gmail 應用程式密碼（不是登入密碼） | 選填，同上 |
 | `GMAIL_SMTP_FROM` | 信件顯示的寄件人地址，預設同 `GMAIL_SMTP_USER` | 選填 |
+| `OPENAI_API_KEY` | 呼叫 Whisper API 產生字幕用 | 選填（不設定則「產生字幕」按鈕會失敗，其餘功能不受影響） |
 
 > **若 MySQL 也裝在同一台 NAS**：Container Manager 的容器預設跟 NAS 上其他套件（如 MariaDB）不在同一個 Docker network，`DB_HOST` 不能直接填 `localhost`。可行做法：
 > - 用 NAS 的區網 IP（例如 `192.168.1.5`）＋ 該 MySQL 服務對外開放的埠號，或
@@ -150,6 +154,8 @@ http://<NAS的IP>:<PORT>/api/health/db
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/002_manual_steps.sql
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/003_folders_and_roles.sql
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/004_acknowledgments_assignments.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/005_quizzes.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/006_caption_status.sql
 ```
 
 新安裝（空資料庫）直接跑最新的 `db/schema.sql` 即可，不需要另外跑這些 migration。
