@@ -2,14 +2,15 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
 import { getManuals } from "@/lib/queries/manuals";
 import { getTasks } from "@/lib/queries/tasks";
-import { CURRENT_ORG_ID, CURRENT_USER_ID } from "@/lib/current-viewer";
+import { CURRENT_ORG_ID, getCurrentUserId } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const userId = await getCurrentUserId();
   const [manuals, tasks] = await Promise.all([
     getManuals(CURRENT_ORG_ID, "published"),
-    getTasks(CURRENT_USER_ID),
+    getTasks(userId),
   ]);
   const recentManuals = manuals.slice(0, 5);
   const openTasks = tasks.filter((t) => !t.done);

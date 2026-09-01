@@ -1,14 +1,15 @@
 import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
 import { BookmarksClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/BookmarksClient";
 import { getBookmarkedCourses, getBookmarkedManuals } from "@/lib/queries/bookmarks";
-import { CURRENT_USER_ID } from "@/lib/current-viewer";
+import { getCurrentUserId } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function BookmarksPage() {
+  const userId = await getCurrentUserId();
   const [manuals, courses] = await Promise.all([
-    getBookmarkedManuals(CURRENT_USER_ID),
-    getBookmarkedCourses(CURRENT_USER_ID),
+    getBookmarkedManuals(userId),
+    getBookmarkedCourses(userId),
   ]);
 
   return (

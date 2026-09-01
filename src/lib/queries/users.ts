@@ -1,4 +1,4 @@
-import type { RowDataPacket } from "mysql2";
+import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
 import type { TebikiUser } from "@/types/tebiki";
 
@@ -26,6 +26,46 @@ export async function getUser(userId: number): Promise<TebikiUser | null> {
     avatarInitial: row.name.slice(0, 1),
     avatarColor: row.avatar_color,
   };
+}
+
+const AVATAR_PALETTE = ["#64748B", "#0EA5E9", "#F59E0B", "#38761D", "#7C3AED", "#DB2777"];
+
+function colorForEmail(email: string): string {
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) hash = (hash * 31 + email.charCodeAt(i)) >>> 0;
+  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
+}
+
+// Called on every successful Google sign-in. First-time sign-in for an
+// @xiyuebiomed.com.tw account auto-provisions a basic-permission ('一般')
+// account -- returning sign-ins just refresh the display name and never
+// touch role/status, so manually-promoted admins don't get reset.
+export async function upsertUserFromGoogle({
+  orgId,
+  email,
+  name,
+}: {
+  orgId: number;
+  email: string;
+  name: string;
+}): Promise<{ id: number; role: string }> {
+  const [existingRows] = await db.query(
+    "SELECT id, role FROM users WHERE email = ?",
+    [email]
+  );
+  const existing = (existingRows as UserRow[])[0];
+  if (existing) {
+    await db.execute("UPDATE users SET name = ? WHERE id = ?", [name, existing.id]);
+    return { id: existing.id, role: existing.role };
+  }
+
+  const role = "一般";
+  const [result] = await db.execute(
+    "INSERT INTO users (org_id, name, email, role, avatar_color, status) VALUES (?, ?, ?, ?, ?, 'active')",
+    [orgId, name, email, role, colorForEmail(email)]
+  );
+  const insertId = (result as ResultSetHeader).insertId;
+  return { id: insertId, role };
 }
 
 export interface OrgUsers {
