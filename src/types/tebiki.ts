@@ -65,6 +65,26 @@ export interface TebikiTask {
   done: boolean;
 }
 
+export interface TebikiAssignment {
+  id: string;
+  manualId: string;
+  manualTitle: string;
+  assignedByName: string;
+  dueDate: string | null;
+  note: string | null;
+  createdAt: string;
+  targetCount: number;
+  completedCount: number;
+}
+
+export interface TebikiMyAssignment {
+  id: string;
+  manualId: string;
+  manualTitle: string;
+  dueDate: string | null;
+  completed: boolean;
+}
+
 export interface TebikiTag {
   id: string;
   name: string;
@@ -102,5 +122,6 @@ export type NavItemKey =
   | "courses"
   | "manuals"
   | "tags"
+  | "assignments"
   | "orgSettings"
   | "orgReports";

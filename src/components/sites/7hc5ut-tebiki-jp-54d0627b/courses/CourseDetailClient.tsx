@@ -18,13 +18,16 @@ export function CourseDetailClient({
   availableManuals,
   canManage,
   canPermanentlyDelete,
+  acknowledgedManualIds,
 }: {
   course: TebikiCourse;
   initialManuals: TebikiCourseManual[];
   availableManuals: TebikiManual[];
   canManage: boolean;
   canPermanentlyDelete: boolean;
+  acknowledgedManualIds: string[];
 }) {
+  const acknowledgedSet = new Set(acknowledgedManualIds);
   const router = useRouter();
   const [status, setStatus] = useState<ManualStatus>(course.status ?? "draft");
   const [manuals, setManuals] = useState(initialManuals);
@@ -155,6 +158,14 @@ export function CourseDetailClient({
         </div>
       )}
 
+      {!canManage && initialManuals.length > 0 && (
+        <div className="rounded-xl border border-tebiki-border bg-white p-4">
+          <p className="text-sm font-medium text-[#2B2C2F]">
+            已完成 {acknowledgedSet.size}/{initialManuals.length} 手冊
+          </p>
+        </div>
+      )}
+
       <div className="rounded-xl border border-tebiki-border bg-white p-6">
         {canManage && (
           <div className="mb-4 flex items-center gap-2">
@@ -213,6 +224,9 @@ export function CourseDetailClient({
                 <Link href={`/manuals/${m.manualId}`} className="flex-1 text-sm text-brand hover:underline">
                   {m.title}
                 </Link>
+                {!canManage && acknowledgedSet.has(m.manualId) && (
+                  <span className="text-xs font-medium text-brand">✓ 已瞭解</span>
+                )}
                 {canManage && (
                   <button
                     type="button"

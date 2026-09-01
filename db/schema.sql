@@ -152,3 +152,37 @@ CREATE TABLE IF NOT EXISTS manual_view_daily (
   FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
   UNIQUE KEY uniq_org_date (org_id, visit_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 員工點擊確認已完成手冊學習。
+CREATE TABLE IF NOT EXISTS manual_acknowledgments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  manual_id INT NOT NULL,
+  user_id INT NOT NULL,
+  acknowledged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_ack (manual_id, user_id),
+  FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 指派：管理員/編輯指定員工研讀整本手冊。
+CREATE TABLE IF NOT EXISTS assignments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  org_id INT NOT NULL,
+  manual_id INT NOT NULL,
+  assigned_by INT NOT NULL,
+  due_date DATE NULL,
+  note VARCHAR(500) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,
+  FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS assignment_targets (
+  assignment_id INT NOT NULL,
+  user_id INT NOT NULL,
+  email_sent_at TIMESTAMP NULL,
+  PRIMARY KEY (assignment_id, user_id),
+  FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -51,4 +51,5 @@ export {
   LogOut as LogOutIcon,
   Eye as EyeIcon,
   EyeOff as EyeOffIcon,
+  ClipboardList as AssignmentIcon,
 } from "lucide-react";

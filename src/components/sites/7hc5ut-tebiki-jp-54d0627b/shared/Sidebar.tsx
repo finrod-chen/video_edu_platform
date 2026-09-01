@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { NavItemKey } from "@/types/tebiki";
 import {
+  AssignmentIcon,
   BookmarkIcon,
   ChevronRightIcon,
   CourseIcon,
@@ -42,6 +43,7 @@ const primaryNav: NavItem[] = [
     ],
   },
   { key: "tags", label: "標籤", href: "/tags", icon: TagIcon },
+  { key: "assignments", label: "指派管理", href: "/assignments", icon: AssignmentIcon },
 ];
 
 const secondaryNav: NavItem[] = [
@@ -57,6 +59,7 @@ export function Sidebar({ activeKey, role }: { activeKey: NavItemKey | null; rol
   const visibleSecondaryNav = secondaryNav.filter(
     (item) => (item.key === "orgSettings" ? canSeeCompanySettings : canSeeReports)
   );
+  const visiblePrimaryNav = primaryNav.filter((item) => (item.key === "assignments" ? canCreate : true));
 
   return (
     <aside className="hidden md:flex w-[216px] shrink-0 flex-col border-r border-tebiki-border bg-white h-screen sticky top-0">
@@ -80,7 +83,7 @@ export function Sidebar({ activeKey, role }: { activeKey: NavItemKey | null; rol
 
       <nav className="flex-1 overflow-y-auto px-3">
         <ul className="space-y-0.5">
-          {primaryNav.map((item) => {
+          {visiblePrimaryNav.map((item) => {
             const isActive = activeKey === item.key;
             const Icon = item.icon;
             return (

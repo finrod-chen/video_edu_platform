@@ -66,6 +66,12 @@ AUTH_URL=https://video-edu.xiyuebiomed.com.tw
 
 # 手冊影片儲存目錄（對應步驟 1 建立的 uploads 資料夾，容器內路徑固定 /app/uploads）
 UPLOAD_DIR=/app/uploads
+
+# Gmail SMTP（指派通知信，選填——沒設定的話指派功能仍可用，只是不會寄信）
+# 需要在寄件 Gmail 帳號開啟兩步驟驗證，並到 https://myaccount.google.com/apppasswords 產生應用程式密碼
+GMAIL_SMTP_USER=your-account@gmail.com
+GMAIL_SMTP_PASSWORD=你的應用程式密碼
+GMAIL_SMTP_FROM=your-account@gmail.com
 ```
 
 | 變數 | 說明 | 是否必填 |
@@ -84,6 +90,9 @@ UPLOAD_DIR=/app/uploads
 | `AUTH_TRUST_HOST` | 在 Docker/反向代理後面必須設 `true`，否則登入 callback 會被拒絕 | 必填（固定填 `true`） |
 | `AUTH_URL` | 對外真實網址（例如 Cloudflare Tunnel 的網域），**沒設會導致登入導回 `http://0.0.0.0:3000/...` 並失敗** | 只要不是純 `localhost` 測試就必填 |
 | `UPLOAD_DIR` | 手冊影片/縮圖的儲存目錄，Docker 部署固定填 `/app/uploads`（對應掛進去的 volume） | 必填 |
+| `GMAIL_SMTP_USER` | 寄件 Gmail 帳號 | 選填（不設定則指派通知信不會寄出，其餘功能不受影響） |
+| `GMAIL_SMTP_PASSWORD` | Gmail 應用程式密碼（不是登入密碼） | 選填，同上 |
+| `GMAIL_SMTP_FROM` | 信件顯示的寄件人地址，預設同 `GMAIL_SMTP_USER` | 選填 |
 
 > **若 MySQL 也裝在同一台 NAS**：Container Manager 的容器預設跟 NAS 上其他套件（如 MariaDB）不在同一個 Docker network，`DB_HOST` 不能直接填 `localhost`。可行做法：
 > - 用 NAS 的區網 IP（例如 `192.168.1.5`）＋ 該 MySQL 服務對外開放的埠號，或
@@ -135,13 +144,15 @@ http://<NAS的IP>:<PORT>/api/health/db
 
 ## 更新資料庫結構（既有部署要手動跑一次）
 
-`db/schema.sql` 加了手冊分段（`manual_steps`）功能後，**已經跑過舊版 `schema.sql` 的資料庫**不會自動套用新結構，需要手動執行一次：
+`db/schema.sql` 每次加新功能，**已經跑過舊版 `schema.sql` 的資料庫**不會自動套用新結構，需要手動依序執行對應的 migration：
 
 ```bash
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/002_manual_steps.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/003_folders_and_roles.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/004_acknowledgments_assignments.sql
 ```
 
-新安裝（空資料庫）直接跑最新的 `db/schema.sql` 即可，不需要另外跑這份 migration。
+新安裝（空資料庫）直接跑最新的 `db/schema.sql` 即可，不需要另外跑這些 migration。
 
 ## 更新版本（拉取新 image）
 

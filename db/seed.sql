@@ -50,6 +50,20 @@ INSERT INTO bookmarks (user_id, item_type, item_id) VALUES
 INSERT INTO tasks (user_id, title, due_date, done) VALUES
   (1, '完成本月安全規範複訓', DATE_ADD(CURDATE(), INTERVAL 7 DAY), FALSE);
 
+-- 已瞭解示例：員工陳小強已確認完成「新進人員教育訓練 SOP」。
+INSERT INTO manual_acknowledgments (manual_id, user_id) VALUES
+  (1, 3)
+ON DUPLICATE KEY UPDATE acknowledged_at = acknowledged_at;
+
+-- 指派示例：編輯林小華指派「機台保養標準流程」給員工陳小強。
+INSERT INTO assignments (id, org_id, manual_id, assigned_by, due_date, note) VALUES
+  (1, 1, 2, 2, DATE_ADD(CURDATE(), INTERVAL 14 DAY), '請於本週內完成學習')
+ON DUPLICATE KEY UPDATE note = VALUES(note);
+
+INSERT INTO assignment_targets (assignment_id, user_id) VALUES
+  (1, 3)
+ON DUPLICATE KEY UPDATE assignment_id = VALUES(assignment_id);
+
 -- 30 days of clearly-fictional report data ending today
 INSERT INTO manual_view_daily (org_id, visit_date, visitor_count, watch_hours)
 SELECT 1, DATE_SUB(CURDATE(), INTERVAL n DAY), FLOOR(1 + RAND() * 4), ROUND(RAND() * 2, 2)
