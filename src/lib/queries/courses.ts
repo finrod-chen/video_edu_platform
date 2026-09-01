@@ -1,90 +1,51 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { TebikiCourse, TebikiCourseFolder, TebikiCourseManual } from "@/types/tebiki";
-
-interface FolderRow extends RowDataPacket {
-  id: number;
-  name: string;
-  parent_id: number | null;
-}
+import type { ManualStatus, TebikiCourse, TebikiCourseManual } from "@/types/tebiki";
 
 interface CourseRow extends RowDataPacket {
   id: number;
   title: string;
-  folder_id: number | null;
+  status: ManualStatus;
+  has_been_published: number | boolean;
 }
 
-export async function getCourseFolders(orgId: number, parentId: number | null = null) {
-  const [rows] = await db.query(
-    parentId === null
-      ? "SELECT id, name, parent_id FROM course_folders WHERE org_id = ? AND parent_id IS NULL ORDER BY name ASC"
-      : "SELECT id, name, parent_id FROM course_folders WHERE org_id = ? AND parent_id = ? ORDER BY name ASC",
-    parentId === null ? [orgId] : [orgId, parentId]
-  );
-  return (rows as FolderRow[]).map(
-    (r): TebikiCourseFolder => ({
-      id: String(r.id),
-      name: r.name,
-      parentId: r.parent_id === null ? null : String(r.parent_id),
-    })
-  );
+function mapCourse(r: CourseRow): TebikiCourse {
+  return {
+    id: String(r.id),
+    title: r.title,
+    status: r.status,
+    hasBeenPublished: Boolean(r.has_been_published),
+  };
 }
 
-export async function getCourses(orgId: number) {
+/** 課程是獨立的教學組合概念（可彙整多本手冊），不屬於任何資料夾。 */
+export async function getCourses(orgId: number, statuses?: ManualStatus[]): Promise<TebikiCourse[]> {
+  const params: (string | number)[] = [orgId];
+  let statusClause = "";
+  if (statuses && statuses.length > 0) {
+    statusClause = ` AND status IN (${statuses.map(() => "?").join(",")})`;
+    params.push(...statuses);
+  }
   const [rows] = await db.query(
-    "SELECT id, title, folder_id FROM courses WHERE org_id = ? ORDER BY title ASC",
-    [orgId]
+    `SELECT id, title, status, has_been_published FROM courses WHERE org_id = ?${statusClause} ORDER BY title ASC`,
+    params
   );
-  return (rows as CourseRow[]).map(
-    (r): TebikiCourse => ({
-      id: String(r.id),
-      title: r.title,
-      folderId: r.folder_id === null ? null : String(r.folder_id),
-    })
-  );
+  return (rows as CourseRow[]).map(mapCourse);
 }
 
 export async function getCourseById(orgId: number, courseId: number): Promise<TebikiCourse | null> {
   const [rows] = await db.query(
-    "SELECT id, title, folder_id FROM courses WHERE id = ? AND org_id = ?",
+    "SELECT id, title, status, has_been_published FROM courses WHERE id = ? AND org_id = ?",
     [courseId, orgId]
   );
   const row = (rows as CourseRow[])[0];
-  if (!row) return null;
-  return { id: String(row.id), title: row.title, folderId: row.folder_id === null ? null : String(row.folder_id) };
+  return row ? mapCourse(row) : null;
 }
 
-export async function createCourseFolder(
-  orgId: number,
-  name: string,
-  parentId: number | null = null
-): Promise<number> {
+export async function createCourse(orgId: number, userId: number, title: string): Promise<number> {
   const [result] = await db.execute(
-    "INSERT INTO course_folders (org_id, parent_id, name) VALUES (?, ?, ?)",
-    [orgId, parentId, name]
-  );
-  return (result as ResultSetHeader).insertId;
-}
-
-export async function renameCourseFolder(orgId: number, folderId: number, name: string): Promise<void> {
-  await db.execute(
-    "UPDATE course_folders SET name = ? WHERE id = ? AND org_id = ?",
-    [name, folderId, orgId]
-  );
-}
-
-export async function deleteCourseFolder(orgId: number, folderId: number): Promise<void> {
-  await db.execute("DELETE FROM course_folders WHERE id = ? AND org_id = ?", [folderId, orgId]);
-}
-
-export async function createCourse(
-  orgId: number,
-  title: string,
-  folderId: number | null = null
-): Promise<number> {
-  const [result] = await db.execute(
-    "INSERT INTO courses (org_id, folder_id, title) VALUES (?, ?, ?)",
-    [orgId, folderId, title]
+    "INSERT INTO courses (org_id, title, status, updated_by) VALUES (?, ?, 'draft', ?)",
+    [orgId, title, userId]
   );
   return (result as ResultSetHeader).insertId;
 }
@@ -92,20 +53,25 @@ export async function createCourse(
 export async function updateCourse(
   orgId: number,
   courseId: number,
-  fields: { title?: string; folderId?: number | null }
+  userId: number,
+  fields: { title?: string; status?: ManualStatus }
 ): Promise<void> {
   const sets: string[] = [];
-  const params: (string | number | null)[] = [];
+  const params: (string | number)[] = [];
   if (fields.title !== undefined) {
     sets.push("title = ?");
     params.push(fields.title);
   }
-  if (fields.folderId !== undefined) {
-    sets.push("folder_id = ?");
-    params.push(fields.folderId);
+  if (fields.status !== undefined) {
+    sets.push("status = ?");
+    params.push(fields.status);
+    if (fields.status === "published") {
+      sets.push("has_been_published = TRUE");
+    }
   }
   if (sets.length === 0) return;
-  params.push(courseId, orgId);
+  sets.push("updated_by = ?");
+  params.push(userId, courseId, orgId);
   await db.execute(`UPDATE courses SET ${sets.join(", ")} WHERE id = ? AND org_id = ?`, params);
 }
 

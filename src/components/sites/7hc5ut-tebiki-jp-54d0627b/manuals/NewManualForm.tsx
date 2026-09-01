@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { TebikiFolder } from "@/types/tebiki";
 
-export function NewManualForm() {
+export function NewManualForm({ folders }: { folders: TebikiFolder[] }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [folderId, setFolderId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +20,10 @@ export function NewManualForm() {
       const res = await fetch("/api/manuals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim() }),
+        body: JSON.stringify({
+          title: title.trim(),
+          ...(folderId ? { folderId: Number(folderId) } : {}),
+        }),
       });
       if (!res.ok) throw new Error("建立失敗");
       const { id } = await res.json();
@@ -44,6 +49,26 @@ export function NewManualForm() {
           className="w-full rounded-lg border border-tebiki-border px-3 py-2.5 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
         />
       </div>
+      {folders.length > 0 && (
+        <div>
+          <label htmlFor="manual-folder" className="mb-1 block text-sm font-bold text-[#2B2C2F]">
+            資料夾（選填）
+          </label>
+          <select
+            id="manual-folder"
+            value={folderId}
+            onChange={(e) => setFolderId(e.target.value)}
+            className="w-full rounded-lg border border-tebiki-border px-3 py-2.5 text-sm"
+          >
+            <option value="">不放入資料夾</option>
+            {folders.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button
         type="submit"

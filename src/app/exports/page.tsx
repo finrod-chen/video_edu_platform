@@ -1,9 +1,11 @@
 import { OrgSettingsShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgSettingsShell";
 import { SearchIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
+import { requireAdmin } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
-export default function ExportsPage() {
+export default async function ExportsPage() {
+  await requireAdmin();
   return (
     <OrgSettingsShell active="下載" breadcrumbExtra="下載">
       <div className="mb-6 border-b border-tebiki-border pb-3">

@@ -1,10 +1,11 @@
 import { OrgSettingsShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgSettingsShell";
 import { getUserGroups } from "@/lib/queries/groups";
-import { CURRENT_ORG_ID } from "@/lib/current-viewer";
+import { CURRENT_ORG_ID, requireAdmin } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function GroupsPage() {
+  await requireAdmin();
   const groups = await getUserGroups(CURRENT_ORG_ID);
 
   return (

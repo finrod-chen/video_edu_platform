@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
 import { CourseDetailClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/courses/CourseDetailClient";
-import { getCourseById, getCourseFolders, getCourseManuals } from "@/lib/queries/courses";
+import { getCourseById, getCourseManuals } from "@/lib/queries/courses";
 import { getManuals } from "@/lib/queries/manuals";
-import { CURRENT_ORG_ID, getCurrentUser, isAdmin } from "@/lib/current-viewer";
+import { CURRENT_ORG_ID, getCurrentUser, isAdmin, isEditorOrAbove } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +16,24 @@ export default async function CourseDetailPage({
   if (!/^\d+$/.test(id)) notFound();
 
   const courseId = Number(id);
-  const course = await getCourseById(CURRENT_ORG_ID, courseId);
-  if (!course) notFound();
-
-  const [manuals, availableManuals, folders, currentUser] = await Promise.all([
-    getCourseManuals(courseId),
-    getManuals(CURRENT_ORG_ID, "published"),
-    getCourseFolders(CURRENT_ORG_ID),
+  const [course, currentUser] = await Promise.all([
+    getCourseById(CURRENT_ORG_ID, courseId),
     getCurrentUser(),
   ]);
+  if (!course) notFound();
+
+  if (course.status !== "published" && !isEditorOrAbove(currentUser.role)) {
+    notFound();
+  }
+
+  const [manuals, availableManuals] = await Promise.all([
+    getCourseManuals(courseId),
+    getManuals(CURRENT_ORG_ID, "published"),
+  ]);
+
+  const canManage = isEditorOrAbove(currentUser.role);
+  const canPermanentlyDelete =
+    isAdmin(currentUser.role) || (canManage && !course.hasBeenPublished);
 
   return (
     <DashboardShell activeKey="courses" breadcrumb={["首頁", "課程", course.title]}>
@@ -33,8 +42,8 @@ export default async function CourseDetailPage({
         course={course}
         initialManuals={manuals}
         availableManuals={availableManuals}
-        folders={folders}
-        isAdmin={isAdmin(currentUser.role)}
+        canManage={canManage}
+        canPermanentlyDelete={canPermanentlyDelete}
       />
     </DashboardShell>
   );

@@ -21,6 +21,8 @@ export interface TebikiManual {
   title: string;
   description?: string;
   status?: ManualStatus;
+  hasBeenPublished?: boolean;
+  folderId?: string | null;
   updatedBy: string;
   updatedAt: string;
   tags: string[];
@@ -37,7 +39,7 @@ export interface TebikiManualStep {
   captionsVtt: string | null;
 }
 
-export interface TebikiCourseFolder {
+export interface TebikiFolder {
   id: string;
   name: string;
   parentId: string | null;
@@ -46,7 +48,8 @@ export interface TebikiCourseFolder {
 export interface TebikiCourse {
   id: string;
   title: string;
-  folderId: string | null;
+  status?: ManualStatus;
+  hasBeenPublished?: boolean;
 }
 
 export interface TebikiCourseManual {

@@ -45,12 +45,18 @@ const primaryNav: NavItem[] = [
 ];
 
 const secondaryNav: NavItem[] = [
-  { key: "orgSettings", label: "組織設定", href: "/orgs", icon: OrgIcon },
-  { key: "orgReports", label: "組織報告", href: "/reports/orgs", icon: ReportIcon },
+  { key: "orgSettings", label: "公司設定", href: "/orgs", icon: OrgIcon },
+  { key: "orgReports", label: "公司報告", href: "/reports/company", icon: ReportIcon },
 ];
 
-export function Sidebar({ activeKey }: { activeKey: NavItemKey | null }) {
+export function Sidebar({ activeKey, role }: { activeKey: NavItemKey | null; role: string }) {
   const pathname = usePathname();
+  const canCreate = role === "管理員" || role === "編輯";
+  const canSeeReports = canCreate;
+  const canSeeCompanySettings = role === "管理員";
+  const visibleSecondaryNav = secondaryNav.filter(
+    (item) => (item.key === "orgSettings" ? canSeeCompanySettings : canSeeReports)
+  );
 
   return (
     <aside className="hidden md:flex w-[216px] shrink-0 flex-col border-r border-tebiki-border bg-white h-screen sticky top-0">
@@ -60,15 +66,17 @@ export function Sidebar({ activeKey }: { activeKey: NavItemKey | null }) {
         </Link>
       </div>
 
-      <div className="px-4 pb-4">
-        <Link
-          href="/manuals/new"
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark transition-colors"
-        >
-          <PlusIcon className="h-4 w-4" />
-          建立
-        </Link>
-      </div>
+      {canCreate && (
+        <div className="px-4 pb-4">
+          <Link
+            href="/manuals/new"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark transition-colors"
+          >
+            <PlusIcon className="h-4 w-4" />
+            建立
+          </Link>
+        </div>
+      )}
 
       <nav className="flex-1 overflow-y-auto px-3">
         <ul className="space-y-0.5">
@@ -89,7 +97,7 @@ export function Sidebar({ activeKey }: { activeKey: NavItemKey | null }) {
                 </Link>
                 {item.children && isActive && (
                   <ul className="ml-8 mt-0.5 space-y-0.5 border-l border-tebiki-border pl-3">
-                    {item.children.map((child) => {
+                    {(canCreate ? item.children : item.children.filter((c) => c.href === "/manuals")).map((child) => {
                       const childActive = pathname === child.href;
                       return (
                         <li key={child.href}>
@@ -116,7 +124,7 @@ export function Sidebar({ activeKey }: { activeKey: NavItemKey | null }) {
 
       <div className="border-t border-tebiki-border px-3 py-3">
         <ul className="space-y-0.5">
-          {secondaryNav.map((item) => {
+          {visibleSecondaryNav.map((item) => {
             const isActive = activeKey === item.key;
             const Icon = item.icon;
             return (

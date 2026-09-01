@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isValidUploadId, writeChunk } from "@/lib/uploads";
+import { getCurrentUser, isEditorOrAbove } from "@/lib/current-viewer";
 
 // Mirrors the client's 8MB CHUNK_SIZE / 2GB MAX_UPLOAD_BYTES
 // (src/lib/upload-client.ts) -- a server-side floor so a misbehaving
@@ -7,6 +8,11 @@ import { isValidUploadId, writeChunk } from "@/lib/uploads";
 const MAX_CHUNK_INDEX = 300;
 
 export async function POST(request: Request) {
+  const { role } = await getCurrentUser();
+  if (!isEditorOrAbove(role)) {
+    return NextResponse.json({ error: "僅限編輯以上權限帳號可上傳影片" }, { status: 403 });
+  }
+
   const formData = await request.formData();
   const uploadId = formData.get("uploadId");
   const index = formData.get("index");

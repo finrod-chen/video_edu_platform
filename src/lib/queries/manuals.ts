@@ -7,6 +7,7 @@ export type { ManualStatus };
 interface ManualRow extends RowDataPacket {
   id: number;
   title: string;
+  folder_id: number | null;
   updated_by_name: string | null;
   updated_at: string;
   tags: string | null;
@@ -16,7 +17,8 @@ export async function getManuals(
   orgId: number,
   status: ManualStatus,
   keyword?: string,
-  order: "asc" | "desc" = "desc"
+  order: "asc" | "desc" = "desc",
+  folderId?: number | null
 ): Promise<TebikiManual[]> {
   const params: (string | number)[] = [orgId, status];
   let keywordClause = "";
@@ -24,17 +26,22 @@ export async function getManuals(
     keywordClause = " AND m.title LIKE ?";
     params.push(`%${keyword}%`);
   }
+  let folderClause = "";
+  if (folderId !== undefined) {
+    folderClause = folderId === null ? " AND m.folder_id IS NULL" : " AND m.folder_id = ?";
+    if (folderId !== null) params.push(folderId);
+  }
   const orderSql = order === "asc" ? "ASC" : "DESC";
 
   const [rows] = await db.query(
-    `SELECT m.id, m.title, u.name AS updated_by_name, m.updated_at,
+    `SELECT m.id, m.title, m.folder_id, u.name AS updated_by_name, m.updated_at,
             GROUP_CONCAT(t.name SEPARATOR ',') AS tags
      FROM manuals m
      LEFT JOIN users u ON u.id = m.updated_by
      LEFT JOIN manual_tags mt ON mt.manual_id = m.id
      LEFT JOIN tags t ON t.id = mt.tag_id
-     WHERE m.org_id = ? AND m.status = ?${keywordClause}
-     GROUP BY m.id, m.title, u.name, m.updated_at
+     WHERE m.org_id = ? AND m.status = ?${keywordClause}${folderClause}
+     GROUP BY m.id, m.title, m.folder_id, u.name, m.updated_at
      ORDER BY m.updated_at ${orderSql}`,
     params
   );
@@ -42,6 +49,7 @@ export async function getManuals(
   return (rows as ManualRow[]).map((r) => ({
     id: String(r.id),
     title: r.title,
+    folderId: r.folder_id === null ? null : String(r.folder_id),
     updatedBy: r.updated_by_name ?? "—",
     updatedAt: r.updated_at,
     tags: r.tags ? r.tags.split(",") : [],
@@ -54,6 +62,8 @@ interface ManualDetailRow extends RowDataPacket {
   title: string;
   description: string | null;
   status: ManualStatus;
+  has_been_published: number | boolean;
+  folder_id: number | null;
   updated_at: string;
 }
 
@@ -62,7 +72,7 @@ export async function getManualById(
   manualId: number
 ): Promise<TebikiManual | null> {
   const [rows] = await db.query(
-    "SELECT id, org_id, title, description, status, updated_at FROM manuals WHERE id = ? AND org_id = ?",
+    "SELECT id, org_id, title, description, status, has_been_published, folder_id, updated_at FROM manuals WHERE id = ? AND org_id = ?",
     [manualId, orgId]
   );
   const row = (rows as ManualDetailRow[])[0];
@@ -72,6 +82,8 @@ export async function getManualById(
     title: row.title,
     description: row.description ?? "",
     status: row.status,
+    hasBeenPublished: Boolean(row.has_been_published),
+    folderId: row.folder_id === null ? null : String(row.folder_id),
     updatedBy: "",
     updatedAt: row.updated_at,
     tags: [],
@@ -81,11 +93,12 @@ export async function getManualById(
 export async function createManual(
   orgId: number,
   userId: number,
-  title: string
+  title: string,
+  folderId: number | null = null
 ): Promise<number> {
   const [result] = await db.execute(
-    "INSERT INTO manuals (org_id, title, status, updated_by) VALUES (?, ?, 'draft', ?)",
-    [orgId, title, userId]
+    "INSERT INTO manuals (org_id, title, status, updated_by, folder_id) VALUES (?, ?, 'draft', ?, ?)",
+    [orgId, title, userId, folderId]
   );
   return (result as ResultSetHeader).insertId;
 }
@@ -94,10 +107,10 @@ export async function updateManual(
   orgId: number,
   manualId: number,
   userId: number,
-  fields: { title?: string; description?: string; status?: ManualStatus }
+  fields: { title?: string; description?: string; status?: ManualStatus; folderId?: number | null }
 ): Promise<void> {
   const sets: string[] = [];
-  const params: (string | number)[] = [];
+  const params: (string | number | null)[] = [];
   if (fields.title !== undefined) {
     sets.push("title = ?");
     params.push(fields.title);
@@ -109,6 +122,13 @@ export async function updateManual(
   if (fields.status !== undefined) {
     sets.push("status = ?");
     params.push(fields.status);
+    if (fields.status === "published") {
+      sets.push("has_been_published = TRUE");
+    }
+  }
+  if (fields.folderId !== undefined) {
+    sets.push("folder_id = ?");
+    params.push(fields.folderId);
   }
   if (sets.length === 0) return;
   sets.push("updated_by = ?");

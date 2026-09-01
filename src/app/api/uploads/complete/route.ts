@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { assembleUpload, extensionForMime, isValidUploadId, saveThumbnail } from "@/lib/uploads";
 import { getManualStepById, updateManualStep } from "@/lib/queries/manuals";
+import { getCurrentUser, isEditorOrAbove } from "@/lib/current-viewer";
 
 export async function POST(request: Request) {
+  const { role } = await getCurrentUser();
+  if (!isEditorOrAbove(role)) {
+    return NextResponse.json({ error: "僅限編輯以上權限帳號可上傳影片" }, { status: 403 });
+  }
+
   const formData = await request.formData();
   const uploadId = formData.get("uploadId");
   const manualId = formData.get("manualId");

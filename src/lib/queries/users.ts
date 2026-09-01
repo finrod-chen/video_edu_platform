@@ -59,7 +59,7 @@ export async function upsertUserFromGoogle({
     return { id: existing.id, role: existing.role };
   }
 
-  const role = "一般";
+  const role = "員工";
   const [result] = await db.execute(
     "INSERT INTO users (org_id, name, email, role, avatar_color, status) VALUES (?, ?, ?, ?, ?, 'active')",
     [orgId, name, email, role, colorForEmail(email)]
@@ -69,14 +69,15 @@ export async function upsertUserFromGoogle({
 }
 
 export interface OrgUsers {
-  members: (TebikiUser & { status: "active" | "invited" })[];
+  members: TebikiUser[];
   memberCount: number;
-  inviteCount: number;
 }
 
+// Google SSO auto-provisions accounts on first sign-in -- there is no invite
+// flow, so every row is effectively 'active'. Only active accounts are listed.
 export async function getOrgUsers(orgId: number): Promise<OrgUsers> {
   const [rows] = await db.query(
-    "SELECT id, name, email, role, avatar_color, status FROM users WHERE org_id = ? ORDER BY status ASC, name ASC",
+    "SELECT id, name, email, role, avatar_color FROM users WHERE org_id = ? AND status = 'active' ORDER BY name ASC",
     [orgId]
   );
   const users = (rows as UserRow[]).map((r) => ({
@@ -86,12 +87,22 @@ export async function getOrgUsers(orgId: number): Promise<OrgUsers> {
     role: r.role,
     avatarInitial: r.name.slice(0, 1),
     avatarColor: r.avatar_color,
-    status: r.status,
   }));
 
   return {
     members: users,
-    memberCount: users.filter((u) => u.status === "active").length,
-    inviteCount: users.filter((u) => u.status === "invited").length,
+    memberCount: users.length,
   };
+}
+
+export async function countAdmins(orgId: number): Promise<number> {
+  const [rows] = await db.query(
+    "SELECT COUNT(*) AS count FROM users WHERE org_id = ? AND role = '管理員' AND status = 'active'",
+    [orgId]
+  );
+  return Number((rows as RowDataPacket[])[0].count);
+}
+
+export async function setUserRole(orgId: number, userId: number, role: string): Promise<void> {
+  await db.execute("UPDATE users SET role = ? WHERE id = ? AND org_id = ?", [role, userId, orgId]);
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { deleteCourseFolder, renameCourseFolder } from "@/lib/queries/courses";
-import { CURRENT_ORG_ID, getCurrentUser, isAdmin } from "@/lib/current-viewer";
+import { deleteFolder, renameFolder } from "@/lib/queries/folders";
+import { CURRENT_ORG_ID, getCurrentUser, isAdmin, isEditorOrAbove } from "@/lib/current-viewer";
 
 export async function PATCH(
   request: Request,
@@ -10,12 +10,16 @@ export async function PATCH(
   if (!/^\d+$/.test(id)) {
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
   }
+  const { role } = await getCurrentUser();
+  if (!isEditorOrAbove(role)) {
+    return NextResponse.json({ error: "僅限編輯以上權限帳號可重新命名資料夾" }, { status: 403 });
+  }
   const body = await request.json().catch(() => null);
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   if (!name) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
   }
-  await renameCourseFolder(CURRENT_ORG_ID, Number(id), name);
+  await renameFolder(CURRENT_ORG_ID, Number(id), name);
   return NextResponse.json({ ok: true });
 }
 
@@ -29,8 +33,8 @@ export async function DELETE(
   }
   const { role } = await getCurrentUser();
   if (!isAdmin(role)) {
-    return NextResponse.json({ error: "僅限行政權限帳號可刪除資料夾" }, { status: 403 });
+    return NextResponse.json({ error: "僅限管理員權限帳號可刪除資料夾" }, { status: 403 });
   }
-  await deleteCourseFolder(CURRENT_ORG_ID, Number(id));
+  await deleteFolder(CURRENT_ORG_ID, Number(id));
   return NextResponse.json({ ok: true });
 }

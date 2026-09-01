@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createManualStep, getManualSteps } from "@/lib/queries/manuals";
+import { getCurrentUser, isEditorOrAbove } from "@/lib/current-viewer";
 
 export async function GET(
   _request: Request,
@@ -20,6 +21,11 @@ export async function POST(
   const { id } = await params;
   if (!/^\d+$/.test(id)) {
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
+  }
+
+  const { role } = await getCurrentUser();
+  if (!isEditorOrAbove(role)) {
+    return NextResponse.json({ error: "僅限編輯以上權限帳號可新增步驟" }, { status: 403 });
   }
 
   const body = await request.json().catch(() => null);

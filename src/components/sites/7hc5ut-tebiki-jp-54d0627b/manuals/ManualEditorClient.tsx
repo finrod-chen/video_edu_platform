@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StepCard } from "./StepCard";
 import { PlusIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
-import type { ManualStatus, TebikiManual, TebikiManualStep, TebikiTag } from "@/types/tebiki";
+import type { ManualStatus, TebikiFolder, TebikiManual, TebikiManualStep, TebikiTag } from "@/types/tebiki";
 
 const STATUS_LABEL: Record<ManualStatus, string> = {
   draft: "草稿",
@@ -17,24 +17,29 @@ export function ManualEditorClient({
   manual,
   initialSteps,
   initialTags,
-  isAdmin,
+  folders,
+  canPermanentlyDelete,
 }: {
   manual: TebikiManual;
   initialSteps: TebikiManualStep[];
   initialTags: TebikiTag[];
-  isAdmin: boolean;
+  folders: TebikiFolder[];
+  canPermanentlyDelete: boolean;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(manual.title);
   const [description, setDescription] = useState(manual.description ?? "");
   const [status, setStatus] = useState<ManualStatus>(manual.status ?? "draft");
+  const [folderId, setFolderId] = useState(manual.folderId ?? "");
   const [steps, setSteps] = useState(initialSteps);
   const [tags, setTags] = useState(initialTags);
   const [newTag, setNewTag] = useState("");
   const [savingMeta, setSavingMeta] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  async function patchManual(fields: Partial<{ title: string; description: string; status: ManualStatus }>) {
+  async function patchManual(
+    fields: Partial<{ title: string; description: string; status: ManualStatus; folderId: number | null }>
+  ) {
     setSavingMeta(true);
     try {
       await fetch(`/api/manuals/${manual.id}`, {
@@ -45,6 +50,11 @@ export function ManualEditorClient({
     } finally {
       setSavingMeta(false);
     }
+  }
+
+  async function handleFolderChange(next: string) {
+    setFolderId(next);
+    await patchManual({ folderId: next ? Number(next) : null });
   }
 
   async function handleAddStep() {
@@ -182,7 +192,7 @@ export function ManualEditorClient({
                 >
                   還原為草稿
                 </button>
-                {isAdmin && (
+                {canPermanentlyDelete && (
                   <button
                     type="button"
                     disabled={deleting}
@@ -219,6 +229,23 @@ export function ManualEditorClient({
           rows={3}
           className="mb-4 w-full rounded-lg border border-tebiki-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
         />
+
+        <label htmlFor="manual-folder" className="mb-1 block text-sm font-bold text-[#2B2C2F]">
+          資料夾（選填）
+        </label>
+        <select
+          id="manual-folder"
+          value={folderId}
+          onChange={(e) => handleFolderChange(e.target.value)}
+          className="mb-4 w-full max-w-xs rounded-lg border border-tebiki-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
+        >
+          <option value="">不放入資料夾</option>
+          {folders.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.name}
+            </option>
+          ))}
+        </select>
 
         <p className="mb-1 text-sm font-bold text-[#2B2C2F]">標籤</p>
         <div className="mb-2 flex flex-wrap gap-2">

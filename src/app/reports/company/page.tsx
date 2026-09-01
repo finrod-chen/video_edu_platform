@@ -4,11 +4,12 @@ import { SearchIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/
 import { VisitorChart } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/root-8a5edab2/VisitorChart";
 import { getOrg } from "@/lib/queries/org";
 import { getReportSummary, getUserAccessRanking, getVisitorSeries } from "@/lib/queries/reports";
-import { CURRENT_ORG_ID } from "@/lib/current-viewer";
+import { CURRENT_ORG_ID, requireEditor } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrgReportsPage() {
+export default async function CompanyReportsPage() {
+  await requireEditor();
   const [org, summary, series, userRanking] = await Promise.all([
     getOrg(CURRENT_ORG_ID),
     getReportSummary(CURRENT_ORG_ID),
@@ -24,15 +25,15 @@ export default async function OrgReportsPage() {
   ];
 
   const rankings = [
-    { title: "用戶訪問排名", href: "/reports/orgs/user_accesses" },
-    { title: "手動訪問排名", href: "/reports/orgs/manual_accesses" },
-    { title: "課程訪問排名", href: "/reports/orgs/course_accesses" },
+    { title: "用戶訪問排名", href: "/reports/company/user_accesses" },
+    { title: "手動訪問排名", href: "/reports/company/manual_accesses" },
+    { title: "課程訪問排名", href: "/reports/company/course_accesses" },
   ];
 
   return (
-    <DashboardShell activeKey="orgReports" breadcrumb={["首頁", "組織報告"]}>
+    <DashboardShell activeKey="orgReports" breadcrumb={["首頁", "公司報告"]}>
       <h1 className="mb-6 flex items-center gap-2 text-xl font-bold text-[#2B2C2F]">
-        組織報告
+        公司報告
         <a href="#" target="_blank" rel="noreferrer" className="text-sm font-normal text-brand hover:underline">
           （幫助）
         </a>

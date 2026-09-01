@@ -1,4 +1,4 @@
--- tebiki clone — MySQL schema
+-- 喜躍生醫影音訓練系統 — MySQL schema
 -- Run against an empty database: mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/schema.sql
 
 CREATE TABLE IF NOT EXISTS organizations (
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
   org_id INT NOT NULL,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
-  role VARCHAR(100) DEFAULT '一般',
+  role VARCHAR(100) DEFAULT '員工',
   avatar_color VARCHAR(20) DEFAULT '#64748B',
   status ENUM('active','invited') NOT NULL DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -48,20 +48,35 @@ CREATE TABLE IF NOT EXISTS tags (
   UNIQUE KEY uniq_org_tag (org_id, name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 資料夾：組織手冊用（不組織課程）。parent_id 保留供未來巢狀資料夾使用。
+CREATE TABLE IF NOT EXISTS folders (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  org_id INT NOT NULL,
+  parent_id INT NULL,
+  name VARCHAR(255) NOT NULL,
+  FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 手冊：資料夾 > 手冊 > 步驟 的中層容器。
 CREATE TABLE IF NOT EXISTS manuals (
   id INT PRIMARY KEY AUTO_INCREMENT,
   org_id INT NOT NULL,
+  folder_id INT NULL,
   title VARCHAR(255) NOT NULL,
   description TEXT NULL,
   status ENUM('published','draft','trashed') NOT NULL DEFAULT 'draft',
+  has_been_published BOOLEAN NOT NULL DEFAULT FALSE,
   updated_by INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL,
   FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_manuals_org_status (org_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 步驟：手冊底下的最小可編輯單位，實際承載影片。
 CREATE TABLE IF NOT EXISTS manual_steps (
   id INT PRIMARY KEY AUTO_INCREMENT,
   manual_id INT NOT NULL,
@@ -85,23 +100,18 @@ CREATE TABLE IF NOT EXISTS manual_tags (
   FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS course_folders (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  org_id INT NOT NULL,
-  parent_id INT NULL,
-  name VARCHAR(255) NOT NULL,
-  FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
-  FOREIGN KEY (parent_id) REFERENCES course_folders(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
+-- 課程：獨立的教學組合概念，可彙整多本手冊（不屬於資料夾）。
 CREATE TABLE IF NOT EXISTS courses (
   id INT PRIMARY KEY AUTO_INCREMENT,
   org_id INT NOT NULL,
-  folder_id INT NULL,
   title VARCHAR(255) NOT NULL,
+  status ENUM('published','draft','trashed') NOT NULL DEFAULT 'draft',
+  has_been_published BOOLEAN NOT NULL DEFAULT FALSE,
+  updated_by INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
-  FOREIGN KEY (folder_id) REFERENCES course_folders(id) ON DELETE SET NULL
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS course_manuals (
