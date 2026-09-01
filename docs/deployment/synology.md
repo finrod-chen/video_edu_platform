@@ -56,6 +56,7 @@ GOOGLE_CLIENT_ID=你的Client ID.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=你的Client Secret
 AUTH_SECRET=用 openssl rand -base64 33 產生的隨機字串
 AUTH_TRUST_HOST=true
+AUTH_URL=https://video-edu.xiyuebiomed.com.tw
 ```
 
 | 變數 | 說明 | 是否必填 |
@@ -72,6 +73,7 @@ AUTH_TRUST_HOST=true
 | `GOOGLE_CLIENT_SECRET` | Google OAuth 用戶端密鑰 | 必填 |
 | `AUTH_SECRET` | 簽章/加密 session 用的隨機密鑰 | 必填 |
 | `AUTH_TRUST_HOST` | 在 Docker/反向代理後面必須設 `true`，否則登入 callback 會被拒絕 | 必填（固定填 `true`） |
+| `AUTH_URL` | 對外真實網址（例如 Cloudflare Tunnel 的網域），**沒設會導致登入導回 `http://0.0.0.0:3000/...` 並失敗** | 只要不是純 `localhost` 測試就必填 |
 
 > **若 MySQL 也裝在同一台 NAS**：Container Manager 的容器預設跟 NAS 上其他套件（如 MariaDB）不在同一個 Docker network，`DB_HOST` 不能直接填 `localhost`。可行做法：
 > - 用 NAS 的區網 IP（例如 `192.168.1.5`）＋ 該 MySQL 服務對外開放的埠號，或
@@ -93,6 +95,7 @@ AUTH_TRUST_HOST=true
    openssl rand -base64 33
    ```
 5. 因為容器跑在反向代理/Docker 後面，`AUTH_TRUST_HOST` 一定要設成 `true`，否則登入時會因為 Host header 不被信任而失敗
+6. **務必同時設定 `AUTH_URL`**（例如 `https://video-edu.xiyuebiomed.com.tw`）。用 Cloudflare Tunnel 等反向代理時，Auth.js 有時無法從轉發的 request 正確判斷對外網址，會退回用容器自己的 bind address 組出 `http://0.0.0.0:3000/...` 這種網址，導致登入後跳回錯誤的網址、顯示 `error=Configuration`。設定 `AUTH_URL` 直接指定正確網址即可解決
 
 ## 步驟 3：在 Container Manager 建立 Project
 
@@ -142,3 +145,6 @@ sudo docker compose -f docker-compose.prod.yml up -d
 - **登入時出現 `redirect_uri_mismatch`**：Google Cloud Console 裡設定的「已授權的重新導向 URI」跟實際存取網址不一致，確認是 `https://<實際網域>/api/auth/callback/google`（協定、網域、路徑都要完全對上）。
 - **登入後立刻被導回 `/login` 並顯示「僅限 @xiyuebiomed.com.tw 網域帳號登入」**：正常行為，代表登入的 Google 帳號不屬於公司網域，換公司帳號重新登入即可。
 - **登入一直失敗，畫面顯示「登入失敗，請再試一次」**：通常是 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` 沒填或填錯，或 `AUTH_TRUST_HOST` 沒設成 `true`。
+- **登入後跳到 `http://0.0.0.0:3000/login?error=Configuration`**：
+  1. 確認 `.env` 有設 `AUTH_URL=https://<你的真實網域>`（見上方「Google SSO 設定」第 6 點），改完要 `docker compose up -d` 或在 Container Manager 重啟容器，**改 `.env` 不會自動套用**。
+  2. 排除以上之後如果還是同樣的錯誤，`error=Configuration` 很可能是登入時自動建立帳號那段程式連不上資料庫（Google 端已經成功回呼，卡在我們自己的伺服器邏輯）。先用瀏覽器打 `https://<你的網域>/api/health/db` 確認資料庫連線正常，再到 Container Manager 看該容器的 Log，搜尋 `[auth] failed to provision user from Google profile` 這行，後面會印出真正的錯誤原因（例如 DB 帳密錯誤、連線被拒等）。

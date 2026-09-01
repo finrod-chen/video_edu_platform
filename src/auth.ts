@@ -35,13 +35,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async jwt({ token, profile }) {
       if (profile?.email) {
-        const user = await upsertUserFromGoogle({
-          orgId: CURRENT_ORG_ID,
-          email: profile.email,
-          name: (profile.name as string | undefined) ?? profile.email,
-        });
-        token.userId = user.id;
-        token.role = user.role;
+        try {
+          const user = await upsertUserFromGoogle({
+            orgId: CURRENT_ORG_ID,
+            email: profile.email,
+            name: (profile.name as string | undefined) ?? profile.email,
+          });
+          token.userId = user.id;
+          token.role = user.role;
+        } catch (error) {
+          // Auth.js surfaces any callback exception to the browser as a
+          // generic ?error=Configuration, hiding the real cause. Log it
+          // server-side (check container logs) -- this almost always means
+          // the DB is unreachable/misconfigured (see .env DB_* vars, or
+          // GET /api/health/db).
+          console.error("[auth] failed to provision user from Google profile:", error);
+          throw error;
+        }
       }
       return token;
     },
