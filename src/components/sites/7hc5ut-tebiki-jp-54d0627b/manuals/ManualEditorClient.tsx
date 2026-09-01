@@ -2,28 +2,37 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { StepCard } from "./StepCard";
 import { PlusIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
-import type { ManualStatus, TebikiManual, TebikiManualStep } from "@/types/tebiki";
+import type { ManualStatus, TebikiManual, TebikiManualStep, TebikiTag } from "@/types/tebiki";
 
 const STATUS_LABEL: Record<ManualStatus, string> = {
   draft: "草稿",
   published: "已發布",
-  trashed: "垃圾",
+  trashed: "垃圾桶",
 };
 
 export function ManualEditorClient({
   manual,
   initialSteps,
+  initialTags,
+  isAdmin,
 }: {
   manual: TebikiManual;
   initialSteps: TebikiManualStep[];
+  initialTags: TebikiTag[];
+  isAdmin: boolean;
 }) {
+  const router = useRouter();
   const [title, setTitle] = useState(manual.title);
   const [description, setDescription] = useState(manual.description ?? "");
   const [status, setStatus] = useState<ManualStatus>(manual.status ?? "draft");
   const [steps, setSteps] = useState(initialSteps);
+  const [tags, setTags] = useState(initialTags);
+  const [newTag, setNewTag] = useState("");
   const [savingMeta, setSavingMeta] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function patchManual(fields: Partial<{ title: string; description: string; status: ManualStatus }>) {
     setSavingMeta(true);
@@ -96,10 +105,45 @@ export function ManualEditorClient({
     });
   }
 
-  async function handleTogglePublish() {
-    const nextStatus: ManualStatus = status === "published" ? "draft" : "published";
-    setStatus(nextStatus);
-    await patchManual({ status: nextStatus });
+  async function handleAddTag() {
+    if (!newTag.trim()) return;
+    const res = await fetch(`/api/manuals/${manual.id}/tags`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newTag.trim() }),
+    });
+    const tag = await res.json();
+    if (!tags.some((t) => t.id === tag.id)) {
+      setTags((prev) => [...prev, tag]);
+    }
+    setNewTag("");
+  }
+
+  async function handleRemoveTag(tagId: string) {
+    setTags((prev) => prev.filter((t) => t.id !== tagId));
+    await fetch(`/api/manuals/${manual.id}/tags/${tagId}`, { method: "DELETE" });
+  }
+
+  async function setNewStatus(next: ManualStatus) {
+    setStatus(next);
+    await patchManual({ status: next });
+  }
+
+  async function handleTrash() {
+    if (!confirm("確定要把這份手冊移到垃圾桶嗎？")) return;
+    await setNewStatus("trashed");
+  }
+
+  async function handlePermanentDelete() {
+    if (!confirm("確定要永久刪除這份手冊嗎？包含所有步驟與影片，此動作無法復原。")) return;
+    setDeleting(true);
+    const res = await fetch(`/api/manuals/${manual.id}`, { method: "DELETE" });
+    if (res.ok) {
+      router.push("/trashes");
+    } else {
+      setDeleting(false);
+      alert("刪除失敗，你可能沒有權限執行此操作。");
+    }
   }
 
   return (
@@ -110,13 +154,47 @@ export function ManualEditorClient({
             {STATUS_LABEL[status]}
             {savingMeta && "・儲存中…"}
           </span>
-          <button
-            type="button"
-            onClick={handleTogglePublish}
-            className="rounded-lg bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark"
-          >
-            {status === "published" ? "取消發布" : "發布手冊"}
-          </button>
+
+          <div className="flex items-center gap-2">
+            {status !== "trashed" ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleTrash}
+                  className="rounded-lg border border-tebiki-border px-4 py-2 text-sm text-[#5B6270] hover:bg-tebiki-bg"
+                >
+                  移到垃圾桶
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewStatus(status === "published" ? "draft" : "published")}
+                  className="rounded-lg bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark"
+                >
+                  {status === "published" ? "取消發布" : "發布手冊"}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setNewStatus("draft")}
+                  className="rounded-lg border border-tebiki-border px-4 py-2 text-sm text-[#5B6270] hover:bg-tebiki-bg"
+                >
+                  還原為草稿
+                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    disabled={deleting}
+                    onClick={handlePermanentDelete}
+                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    永久刪除
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         <label htmlFor="manual-title" className="mb-1 block text-sm font-bold text-[#2B2C2F]">
@@ -139,8 +217,44 @@ export function ManualEditorClient({
           onChange={(e) => setDescription(e.target.value)}
           onBlur={() => patchManual({ description })}
           rows={3}
-          className="w-full rounded-lg border border-tebiki-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
+          className="mb-4 w-full rounded-lg border border-tebiki-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
         />
+
+        <p className="mb-1 text-sm font-bold text-[#2B2C2F]">標籤</p>
+        <div className="mb-2 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <span
+              key={tag.id}
+              className="flex items-center gap-1 rounded-full bg-tebiki-bg px-3 py-1 text-xs text-[#2B2C2F]"
+            >
+              {tag.name}
+              <button
+                type="button"
+                onClick={() => handleRemoveTag(tag.id)}
+                aria-label={`移除標籤 ${tag.name}`}
+                className="text-[#8B93A1] hover:text-red-600"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
+            placeholder="新增標籤"
+            className="w-48 rounded-lg border border-tebiki-border px-3 py-1.5 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
+          />
+          <button
+            type="button"
+            onClick={handleAddTag}
+            className="rounded-lg border border-tebiki-border px-3 py-1.5 text-sm text-[#5B6270] hover:bg-tebiki-bg"
+          >
+            加入
+          </button>
+        </div>
       </div>
 
       <div>

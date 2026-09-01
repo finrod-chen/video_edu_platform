@@ -2,6 +2,10 @@
 
 const CHUNK_SIZE = 8 * 1024 * 1024; // 8MB — well under Cloudflare's 100MB/request cap
 
+// Soft cap so a mis-selected huge file fails fast with a clear message
+// instead of silently grinding through thousands of chunk requests.
+export const MAX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024; // 2GB
+
 export interface UploadResult {
   videoPath: string;
   thumbnailPath?: string;
@@ -58,6 +62,12 @@ export async function uploadManualStepVideo(
   file: File,
   onProgress?: (fraction: number) => void
 ): Promise<UploadResult> {
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error(
+      `檔案太大（${(file.size / 1024 / 1024 / 1024).toFixed(1)}GB），單支影片上限為 ${MAX_UPLOAD_BYTES / 1024 / 1024 / 1024}GB。`
+    );
+  }
+
   const uploadId = crypto.randomUUID();
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 

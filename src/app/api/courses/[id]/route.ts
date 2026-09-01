@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteCourse, getCourseById, updateCourse } from "@/lib/queries/courses";
-import { CURRENT_ORG_ID } from "@/lib/current-viewer";
+import { CURRENT_ORG_ID, getCurrentUser, isAdmin } from "@/lib/current-viewer";
 
 export async function GET(
   _request: Request,
@@ -44,6 +44,10 @@ export async function DELETE(
   const { id } = await params;
   if (!/^\d+$/.test(id)) {
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
+  }
+  const { role } = await getCurrentUser();
+  if (!isAdmin(role)) {
+    return NextResponse.json({ error: "僅限行政權限帳號可刪除課程" }, { status: 403 });
   }
   await deleteCourse(CURRENT_ORG_ID, Number(id));
   return NextResponse.json({ ok: true });

@@ -100,6 +100,14 @@ export async function saveThumbnail(
   return relativePath.split(path.sep).join("/");
 }
 
+export async function deleteManualStepFiles(manualId: number, stepId: number): Promise<void> {
+  await rm(manualStepDir(manualId, stepId), { recursive: true, force: true });
+}
+
+export async function deleteManualFiles(manualId: number): Promise<void> {
+  await rm(path.join(uploadRoot(), "manuals", String(manualId)), { recursive: true, force: true });
+}
+
 export function resolveStoredPath(relativePath: string): string {
   // Stored paths are always DB-controlled (written by assembleUpload/
   // saveThumbnail above), never taken directly from a request -- still

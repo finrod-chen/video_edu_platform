@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getManualById, updateManual } from "@/lib/queries/manuals";
-import { CURRENT_ORG_ID, getCurrentUserId } from "@/lib/current-viewer";
+import { deleteManual, getManualById, updateManual } from "@/lib/queries/manuals";
+import { CURRENT_ORG_ID, getCurrentUser, getCurrentUserId, isAdmin } from "@/lib/current-viewer";
+import { deleteManualFiles } from "@/lib/uploads";
 import type { ManualStatus } from "@/types/tebiki";
 
 const VALID_STATUSES: ManualStatus[] = ["published", "draft", "trashed"];
@@ -44,6 +45,27 @@ export async function PATCH(
 
   const userId = await getCurrentUserId();
   await updateManual(CURRENT_ORG_ID, Number(id), userId, fields);
+
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  if (!/^\d+$/.test(id)) {
+    return NextResponse.json({ error: "invalid id" }, { status: 400 });
+  }
+
+  const { role } = await getCurrentUser();
+  if (!isAdmin(role)) {
+    return NextResponse.json({ error: "僅限行政權限帳號可永久刪除手冊" }, { status: 403 });
+  }
+
+  const manualId = Number(id);
+  await deleteManual(CURRENT_ORG_ID, manualId);
+  await deleteManualFiles(manualId);
 
   return NextResponse.json({ ok: true });
 }

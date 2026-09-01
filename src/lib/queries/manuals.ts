@@ -120,6 +120,11 @@ export async function updateManual(
   );
 }
 
+/** Permanently deletes a manual (its steps/tags/course links cascade via FK). */
+export async function deleteManual(orgId: number, manualId: number): Promise<void> {
+  await db.execute("DELETE FROM manuals WHERE id = ? AND org_id = ?", [manualId, orgId]);
+}
+
 interface StepRow extends RowDataPacket {
   id: number;
   manual_id: number;

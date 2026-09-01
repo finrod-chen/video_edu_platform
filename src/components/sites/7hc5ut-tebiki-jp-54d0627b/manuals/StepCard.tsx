@@ -41,8 +41,8 @@ export function StepCard({
     try {
       const result = await uploadManualStepVideo(manualId, step.id, file, setProgress);
       onUploaded(step.id, result.videoPath, result.thumbnailPath);
-    } catch {
-      setError("上傳失敗，請再試一次。");
+    } catch (err) {
+      setError(err instanceof Error && err.message ? err.message : "上傳失敗，請再試一次。");
     } finally {
       setProgress(null);
     }
@@ -133,7 +133,11 @@ export function StepCard({
 
       <button
         type="button"
-        onClick={() => onDelete(step.id)}
+        onClick={() => {
+          if (confirm(`確定要刪除步驟「${step.title || `步驟 ${index + 1}`}」嗎？影片也會一併刪除，此動作無法復原。`)) {
+            onDelete(step.id);
+          }
+        }}
         className="self-start text-xs text-[#8B93A1] hover:text-red-600"
         aria-label="刪除步驟"
       >

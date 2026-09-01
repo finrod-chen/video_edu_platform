@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteCourseFolder, renameCourseFolder } from "@/lib/queries/courses";
-import { CURRENT_ORG_ID } from "@/lib/current-viewer";
+import { CURRENT_ORG_ID, getCurrentUser, isAdmin } from "@/lib/current-viewer";
 
 export async function PATCH(
   request: Request,
@@ -26,6 +26,10 @@ export async function DELETE(
   const { id } = await params;
   if (!/^\d+$/.test(id)) {
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
+  }
+  const { role } = await getCurrentUser();
+  if (!isAdmin(role)) {
+    return NextResponse.json({ error: "僅限行政權限帳號可刪除資料夾" }, { status: 403 });
   }
   await deleteCourseFolder(CURRENT_ORG_ID, Number(id));
   return NextResponse.json({ ok: true });
