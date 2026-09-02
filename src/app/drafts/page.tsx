@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function DraftsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sort?: string; folderId?: string }>;
+  searchParams: Promise<{ sort?: string; folderId?: string }>;
 }) {
   await requireEditor();
   return <ManualListPage breadcrumbLabel="草稿" status="draft" searchParams={searchParams} />;

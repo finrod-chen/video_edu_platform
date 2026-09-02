@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { DashboardShell, EmptyState } from "./DashboardShell";
 import { FolderManager } from "./FolderManager";
-import { BatchCaptionsButton } from "./BatchCaptionsButton";
-import { SearchIcon, SortIcon } from "./icons";
-import { getManuals, getStepsNeedingCaptions, type ManualStatus } from "@/lib/queries/manuals";
+import { SortIcon } from "./icons";
+import { getManuals, type ManualStatus } from "@/lib/queries/manuals";
 import { getFolders } from "@/lib/queries/folders";
 import { CURRENT_ORG_ID, getCurrentUser, isAdmin, isEditorOrAbove } from "@/lib/current-viewer";
+
+const BASE_PATH_BY_STATUS: Record<ManualStatus, string> = {
+  published: "/manuals",
+  draft: "/drafts",
+  trashed: "/trashes",
+};
 
 export async function ManualListPage({
   breadcrumbLabel,
@@ -14,10 +19,9 @@ export async function ManualListPage({
 }: {
   breadcrumbLabel: string;
   status: ManualStatus;
-  searchParams?: Promise<{ q?: string; sort?: string; folderId?: string }>;
+  searchParams?: Promise<{ sort?: string; folderId?: string }>;
 }) {
   const resolved = searchParams ? await searchParams : undefined;
-  const keyword = resolved?.q?.trim();
   const order = resolved?.sort === "asc" ? "asc" : "desc";
   const folderIdParam = resolved?.folderId;
   const folderId =
@@ -31,62 +35,31 @@ export async function ManualListPage({
 
   const { role } = await getCurrentUser();
   const canManageFolders = isEditorOrAbove(role);
+  const basePath = BASE_PATH_BY_STATUS[status];
 
-  const [manuals, folders, captionBacklog] = await Promise.all([
-    getManuals(CURRENT_ORG_ID, status, keyword, order, folderId),
+  const [manuals, folders] = await Promise.all([
+    getManuals(CURRENT_ORG_ID, status, undefined, order, folderId),
     getFolders(CURRENT_ORG_ID),
-    canManageFolders ? getStepsNeedingCaptions(CURRENT_ORG_ID) : Promise.resolve([]),
   ]);
 
   const nextSortHref = `?${new URLSearchParams({
-    ...(keyword ? { q: keyword } : {}),
     ...(folderIdParam ? { folderId: folderIdParam } : {}),
     sort: order === "asc" ? "desc" : "asc",
   }).toString()}`;
 
   return (
     <DashboardShell activeKey="manuals" breadcrumb={["首頁", breadcrumbLabel]}>
-      {canManageFolders && <FolderManager folders={folders} canDelete={isAdmin(role)} />}
-      {canManageFolders && captionBacklog.length > 0 && (
-        <BatchCaptionsButton pendingCount={captionBacklog.length} />
+      {canManageFolders && (
+        <FolderManager
+          folders={folders}
+          canDelete={isAdmin(role)}
+          basePath={basePath}
+          selectedFolderId={folderIdParam}
+        />
       )}
 
       <div className="rounded-xl border border-app-border bg-white">
-        <form method="get" className="flex items-center justify-between gap-4 px-6 py-4">
-          <div className="grid flex-1 grid-cols-3 gap-6">
-            <div>
-              <p className="mb-1 text-xs font-medium text-[#8B93A1]">關鍵字</p>
-              <label className="relative flex items-center">
-                <SearchIcon className="pointer-events-none absolute left-3 h-4 w-4 text-[#8B93A1]" />
-                <input
-                  type="search"
-                  name="q"
-                  defaultValue={keyword}
-                  placeholder="按關鍵字搜尋"
-                  className="w-full rounded-lg border border-app-border bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
-                />
-              </label>
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-medium text-[#8B93A1]">資料夾</p>
-              <select
-                name="folderId"
-                defaultValue={folderIdParam ?? ""}
-                className="w-full rounded-lg border border-app-border bg-white px-3 py-2 text-sm"
-              >
-                <option value="">所有資料夾</option>
-                <option value="none">未分類</option>
-                {folders.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-medium text-[#8B93A1]">最後更新者</p>
-            </div>
-          </div>
+        <div className="flex items-center justify-end px-6 py-4">
           <Link
             href={nextSortHref}
             className="flex shrink-0 items-center gap-1.5 text-sm text-[#5B6270] hover:text-brand"
@@ -94,7 +67,7 @@ export async function ManualListPage({
             <SortIcon className="h-4 w-4" />
             {order === "desc" ? "最新" : "最舊"}
           </Link>
-        </form>
+        </div>
 
         {manuals.length === 0 ? (
           <EmptyState title="沒有數據" />

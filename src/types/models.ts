@@ -91,13 +91,6 @@ export interface CourseManual {
   position: number;
 }
 
-export interface Task {
-  id: string;
-  title: string;
-  dueDate?: string;
-  done: boolean;
-}
-
 export interface Assignment {
   id: string;
   manualId: string;

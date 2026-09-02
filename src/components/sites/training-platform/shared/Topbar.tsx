@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { mockUser } from "./mock-data";
-import {
-  BellIcon,
-  LinkIcon,
-  LogOutIcon,
-  SearchIcon,
-  TaskIcon,
-  TranslateIcon,
-} from "./icons";
+import { HeaderSearch } from "./HeaderSearch";
+import { LogOutIcon } from "./icons";
 import { getUser } from "@/lib/queries/users";
 import { getCurrentUserId } from "@/lib/current-viewer";
 import { signOut } from "@/auth";
@@ -29,48 +23,10 @@ export async function Topbar({ breadcrumb }: { breadcrumb: string[] }) {
             {crumb}
           </span>
         ))}
-        <button
-          type="button"
-          aria-label="複製連結"
-          className="ml-1 rounded p-1 text-[#8B93A1] hover:bg-app-bg"
-        >
-          <LinkIcon className="h-3.5 w-3.5" />
-        </button>
       </div>
 
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          aria-label="翻譯"
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-brand hover:bg-brand/20"
-        >
-          <TranslateIcon className="h-4 w-4" />
-        </button>
-
-        <label className="relative flex items-center">
-          <SearchIcon className="pointer-events-none absolute left-3 h-4 w-4 text-[#8B93A1]" />
-          <input
-            type="search"
-            placeholder="搜尋系統內容"
-            className="w-64 rounded-lg border-0 bg-[#F5F6F8] py-2 pl-9 pr-3 text-sm text-[#2B2C2F] placeholder:text-[#8B93A1] focus:outline-none focus:ring-2 focus:ring-brand/40"
-          />
-        </label>
-
-        <button
-          type="button"
-          aria-label="任務"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#5B6270] hover:bg-app-bg"
-        >
-          <TaskIcon className="h-[18px] w-[18px]" />
-        </button>
-
-        <button
-          type="button"
-          aria-label="通知"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#5B6270] hover:bg-app-bg"
-        >
-          <BellIcon className="h-[18px] w-[18px]" />
-        </button>
+        <HeaderSearch />
 
         <Link
           href="/mypage"

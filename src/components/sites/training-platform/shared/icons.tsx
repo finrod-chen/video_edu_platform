@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 export function SiteLogo({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 132 30"
+      viewBox="0 0 172 30"
       className={cn("h-7 w-auto", className)}
       xmlns="http://www.w3.org/2000/svg"
       aria-label="喜躍生醫影音訓練系統"
@@ -15,8 +15,8 @@ export function SiteLogo({ className }: { className?: string }) {
       />
       <path d="M15 1l6 6h-4a2 2 0 0 1-2-2V1Z" fill="#5C9A3A" />
       <path d="M10.5 12.5 18 17l-7.5 4.5v-9Z" fill="#fff" />
-      <text x="34" y="21" fontFamily="Noto Sans JP, sans-serif" fontWeight="700" fontSize="16" fill="#1A2733">
-        喜躍生醫
+      <text x="34" y="21" fontFamily="Noto Sans JP, sans-serif" fontWeight="700" fontSize="13" fill="#1A2733">
+        喜躍生醫影音訓練系統
       </text>
     </svg>
   );

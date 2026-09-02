@@ -1,11 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { FolderIcon, PlusIcon } from "./icons";
 import type { Folder } from "@/types/models";
 
-export function FolderManager({ folders, canDelete }: { folders: Folder[]; canDelete: boolean }) {
+export function FolderManager({
+  folders,
+  canDelete,
+  basePath,
+  selectedFolderId,
+}: {
+  folders: Folder[];
+  canDelete: boolean;
+  basePath: string;
+  /** undefined = 全部, "none" = 未分類, else the folder id */
+  selectedFolderId: string | undefined;
+}) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
@@ -80,32 +93,62 @@ export function FolderManager({ folders, canDelete }: { folders: Folder[]; canDe
         </div>
       )}
 
-      {folders.length > 0 && (
-        <ul className="divide-y divide-app-border border-t border-app-border">
-          {folders.map((f) => (
-            <li key={f.id} className="flex items-center gap-2 px-6 py-2.5 text-sm text-[#2B2C2F]">
+      <ul className="divide-y divide-app-border border-t border-app-border">
+        <li>
+          <Link
+            href={basePath}
+            className={cn(
+              "flex items-center gap-2 px-6 py-2.5 text-sm hover:bg-app-bg",
+              selectedFolderId === undefined ? "font-medium text-brand" : "text-[#2B2C2F]"
+            )}
+          >
+            <FolderIcon className="h-4 w-4 shrink-0 text-[#8B93A1]" />
+            全部
+          </Link>
+        </li>
+        <li>
+          <Link
+            href={`${basePath}?folderId=none`}
+            className={cn(
+              "flex items-center gap-2 px-6 py-2.5 text-sm hover:bg-app-bg",
+              selectedFolderId === "none" ? "font-medium text-brand" : "text-[#2B2C2F]"
+            )}
+          >
+            <FolderIcon className="h-4 w-4 shrink-0 text-[#8B93A1]" />
+            未分類
+          </Link>
+        </li>
+        {folders.map((f) => (
+          <li key={f.id} className="flex items-center gap-2 px-6 py-2.5 text-sm text-[#2B2C2F]">
+            <Link
+              href={`${basePath}?folderId=${f.id}`}
+              className={cn(
+                "flex flex-1 items-center gap-2 hover:text-brand",
+                selectedFolderId === f.id ? "font-medium text-brand" : ""
+              )}
+            >
               <FolderIcon className="h-4 w-4 shrink-0 text-[#8B93A1]" />
-              <span className="flex-1">{f.name}</span>
+              {f.name}
+            </Link>
+            <button
+              type="button"
+              onClick={() => handleRename(f)}
+              className="text-xs text-[#8B93A1] hover:text-brand"
+            >
+              重新命名
+            </button>
+            {canDelete && (
               <button
                 type="button"
-                onClick={() => handleRename(f)}
-                className="text-xs text-[#8B93A1] hover:text-brand"
+                onClick={() => handleDelete(f)}
+                className="text-xs text-[#8B93A1] hover:text-red-600"
               >
-                重新命名
+                刪除
               </button>
-              {canDelete && (
-                <button
-                  type="button"
-                  onClick={() => handleDelete(f)}
-                  className="text-xs text-[#8B93A1] hover:text-red-600"
-                >
-                  刪除
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
