@@ -89,9 +89,13 @@ CREATE TABLE IF NOT EXISTS manual_steps (
   caption_status ENUM('none','pending','done','failed') NOT NULL DEFAULT 'none',
   -- 非破壞性影片編輯（剪輯/旋轉/圖形標註/定格），播放時依此套用，原始影片檔不變動。
   edit_data JSON NULL,
+  -- 編輯鎖：同時間只允許一人編輯，10 分鐘沒續鎖視為過期（見 stepLocks.ts）。
+  edit_lock_user_id INT NULL,
+  edit_lock_at TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,
+  FOREIGN KEY (edit_lock_user_id) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_steps_manual (manual_id, position)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

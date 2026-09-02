@@ -65,6 +65,17 @@ export function StepCard({
     await fetch(`/api/manuals/${manualId}/steps/${step.id}/captions`, { method: "POST" });
   }
 
+  async function handleEditVideoClick() {
+    setError(null);
+    const res = await fetch(`/api/manuals/${manualId}/steps/${step.id}/edit-lock`, { method: "POST" });
+    if (res.ok) {
+      setEditingVideo(true);
+    } else {
+      const data = await res.json().catch(() => null);
+      setError(data?.error ?? "目前無法編輯這支影片，請稍後再試。");
+    }
+  }
+
   async function handleFileSelected(file: File) {
     if (!file.type.startsWith("video/")) {
       setError("請選擇影片檔案");
@@ -175,11 +186,12 @@ export function StepCard({
             )}
             <button
               type="button"
-              onClick={() => setEditingVideo(true)}
-              className="text-xs text-brand hover:underline"
+              onClick={handleEditVideoClick}
+              className="hidden text-xs text-brand hover:underline md:inline-block"
             >
               編輯影片
             </button>
+            <span className="text-xs text-[#8B93A1] md:hidden">影片編輯僅支援電腦版</span>
           </div>
         )}
         {error && <p className="text-xs text-red-600">{error}</p>}

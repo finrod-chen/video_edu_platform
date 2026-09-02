@@ -18,20 +18,44 @@ function nextTrimTarget(
   return "ended";
 }
 
-function AnnotationBox({ a }: { a: ManualStepAnnotation }) {
+function AnnotationBox({
+  a,
+  interactive,
+  selected,
+  onSelect,
+}: {
+  a: ManualStepAnnotation;
+  interactive?: boolean;
+  selected?: boolean;
+  onSelect?: () => void;
+}) {
   const boxStyle: React.CSSProperties = {
     position: "absolute",
     left: `${a.x}%`,
     top: `${a.y}%`,
     width: `${a.width}%`,
     height: `${a.height}%`,
+    cursor: interactive ? "pointer" : undefined,
+    outline: selected ? "2px solid #38761D" : undefined,
+    outlineOffset: selected ? "2px" : undefined,
   };
+  const interactiveProps = interactive
+    ? {
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation();
+          onSelect?.();
+        },
+        role: "button" as const,
+        tabIndex: 0,
+      }
+    : {};
 
   if (a.type === "text") {
     return (
       <div
         style={boxStyle}
         className="flex items-center justify-center rounded bg-black/70 px-2 py-1 text-sm font-medium text-white"
+        {...interactiveProps}
       >
         {a.text}
       </div>
@@ -42,15 +66,23 @@ function AnnotationBox({ a }: { a: ManualStepAnnotation }) {
       <div
         style={{ ...boxStyle, borderColor: a.color ?? "#ef4444" }}
         className="rounded border-4"
+        {...interactiveProps}
       />
     );
   }
   if (a.type === "blur") {
-    return <div style={{ ...boxStyle, backdropFilter: "blur(12px)" }} className="rounded" />;
+    return (
+      <div
+        style={{ ...boxStyle, backdropFilter: "blur(12px)" }}
+        className="rounded"
+        {...interactiveProps}
+      />
+    );
   }
   // arrow: draw a line from top-left to bottom-right of the box via SVG
   return (
-    <svg style={boxStyle} className="overflow-visible">
+    <svg style={boxStyle} className="overflow-visible" {...interactiveProps}>
+      {interactive && <rect x="0" y="0" width="100%" height="100%" fill="transparent" />}
       <defs>
         <marker id={`arrowhead-${a.id}`} markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
           <path d="M0,0 L8,4 L0,8 Z" fill={a.color ?? "#ef4444"} />
@@ -79,6 +111,9 @@ export function EditableVideoPlayer({
   onTimeUpdate,
   onEnded,
   className,
+  interactiveAnnotations,
+  selectedAnnotationId,
+  onAnnotationClick,
 }: {
   src: string;
   poster?: string;
@@ -89,6 +124,10 @@ export function EditableVideoPlayer({
   onTimeUpdate?: (time: number) => void;
   onEnded?: () => void;
   className?: string;
+  /** Editor mode: lets annotation boxes be clicked directly on the preview to select them (unambiguous even when time-overlapping, since they usually differ spatially). Leave unset for read-only playback. */
+  interactiveAnnotations?: boolean;
+  selectedAnnotationId?: string | null;
+  onAnnotationClick?: (id: string) => void;
 }) {
   const internalVideoRef = useRef<HTMLVideoElement>(null);
   const videoRef = externalVideoRef ?? internalVideoRef;
@@ -179,9 +218,15 @@ export function EditableVideoPlayer({
       >
         {captionSrc && <track kind="captions" srcLang="zh-Hant" label="繁體中文" src={captionSrc} default />}
       </video>
-      <div className="pointer-events-none absolute inset-0">
+      <div className={interactiveAnnotations ? "absolute inset-0" : "pointer-events-none absolute inset-0"}>
         {activeAnnotations.map((a) => (
-          <AnnotationBox key={a.id} a={a} />
+          <AnnotationBox
+            key={a.id}
+            a={a}
+            interactive={interactiveAnnotations}
+            selected={selectedAnnotationId === a.id}
+            onSelect={() => onAnnotationClick?.(a.id)}
+          />
         ))}
       </div>
     </div>
