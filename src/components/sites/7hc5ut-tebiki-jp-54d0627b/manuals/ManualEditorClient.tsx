@@ -5,7 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StepCard } from "./StepCard";
 import { PlusIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
-import type { ManualStatus, TebikiFolder, TebikiManual, TebikiManualStep, TebikiTag } from "@/types/tebiki";
+import type {
+  ManualStatus,
+  ManualStepEditData,
+  TebikiFolder,
+  TebikiManual,
+  TebikiManualStep,
+  TebikiTag,
+} from "@/types/tebiki";
 
 const STATUS_LABEL: Record<ManualStatus, string> = {
   draft: "草稿",
@@ -76,6 +83,7 @@ export function ManualEditorClient({
         durationSeconds: null,
         captionsVtt: null,
         captionStatus: "none" as const,
+        editData: null,
       },
     ]);
   }
@@ -108,6 +116,10 @@ export function ManualEditorClient({
           : s
       )
     );
+  }
+
+  function handleEditDataSaved(stepId: string, editData: ManualStepEditData) {
+    setSteps((prev) => prev.map((s) => (s.id === stepId ? { ...s, editData } : s)));
   }
 
   async function handleMoveStep(stepId: string, direction: "up" | "down") {
@@ -317,6 +329,7 @@ export function ManualEditorClient({
               onDelete={handleDeleteStep}
               onMove={handleMoveStep}
               onUploaded={handleStepUploaded}
+              onEditDataSaved={handleEditDataSaved}
             />
           ))}
         </div>

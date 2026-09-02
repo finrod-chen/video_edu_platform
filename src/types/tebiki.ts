@@ -30,6 +30,31 @@ export interface TebikiManual {
 
 export type CaptionStatus = "none" | "pending" | "done" | "failed";
 
+export type ManualStepAnnotationType = "text" | "arrow" | "rect" | "blur";
+
+export interface ManualStepAnnotation {
+  id: string;
+  type: ManualStepAnnotationType;
+  startTime: number;
+  endTime: number;
+  /** All four are percentages (0-100) of the video's rendered box, so they stay correct at any player size. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  text?: string;
+  color?: string;
+}
+
+export interface ManualStepEditData {
+  rotation?: 0 | 90 | 180 | 270;
+  /** Ordered ranges (seconds) to keep; playback skips everything outside these. Empty/undefined = play the whole video. */
+  trimRanges?: { start: number; end: number }[];
+  /** Pause playback for `duration` seconds once playback reaches `time`. */
+  freezeFrames?: { time: number; duration: number }[];
+  annotations?: ManualStepAnnotation[];
+}
+
 export interface TebikiManualStep {
   id: string;
   manualId: string;
@@ -40,6 +65,7 @@ export interface TebikiManualStep {
   durationSeconds: number | null;
   captionsVtt: string | null;
   captionStatus: CaptionStatus;
+  editData: ManualStepEditData | null;
 }
 
 export interface TebikiFolder {

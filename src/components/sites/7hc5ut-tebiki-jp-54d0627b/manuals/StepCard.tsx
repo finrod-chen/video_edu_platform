@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { uploadManualStepVideo } from "@/lib/upload-client";
-import type { CaptionStatus, TebikiManualStep } from "@/types/tebiki";
+import { VideoEditPanel } from "./VideoEditPanel";
+import type { CaptionStatus, ManualStepEditData, TebikiManualStep } from "@/types/tebiki";
 import {
   ChevronDownIcon,
   PlusIcon,
@@ -24,6 +25,7 @@ export function StepCard({
   onDelete,
   onMove,
   onUploaded,
+  onEditDataSaved,
 }: {
   manualId: string;
   step: TebikiManualStep;
@@ -33,11 +35,13 @@ export function StepCard({
   onDelete: (stepId: string) => void;
   onMove: (stepId: string, direction: "up" | "down") => void;
   onUploaded: (stepId: string, videoPath: string, thumbnailPath?: string) => void;
+  onEditDataSaved: (stepId: string, editData: ManualStepEditData) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [captionStatus, setCaptionStatus] = useState<CaptionStatus>(step.captionStatus);
+  const [editingVideo, setEditingVideo] = useState(false);
 
   useEffect(() => {
     setCaptionStatus(step.captionStatus);
@@ -169,6 +173,13 @@ export function StepCard({
             ) : (
               <span className="text-xs text-[#8B93A1]">{CAPTION_STATUS_LABEL[captionStatus]}</span>
             )}
+            <button
+              type="button"
+              onClick={() => setEditingVideo(true)}
+              className="text-xs text-brand hover:underline"
+            >
+              編輯影片
+            </button>
           </div>
         )}
         {error && <p className="text-xs text-red-600">{error}</p>}
@@ -186,6 +197,15 @@ export function StepCard({
       >
         刪除
       </button>
+
+      {editingVideo && (
+        <VideoEditPanel
+          manualId={manualId}
+          step={step}
+          onClose={() => setEditingVideo(false)}
+          onSaved={(editData) => onEditDataSaved(step.id, editData)}
+        />
+      )}
     </div>
   );
 }

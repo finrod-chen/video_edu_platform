@@ -87,6 +87,8 @@ CREATE TABLE IF NOT EXISTS manual_steps (
   duration_seconds INT NULL,
   captions_vtt MEDIUMTEXT NULL,
   caption_status ENUM('none','pending','done','failed') NOT NULL DEFAULT 'none',
+  -- 非破壞性影片編輯（剪輯/旋轉/圖形標註/定格），播放時依此套用，原始影片檔不變動。
+  edit_data JSON NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,

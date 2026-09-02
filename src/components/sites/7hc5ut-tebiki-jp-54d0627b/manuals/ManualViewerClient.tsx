@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { EditableVideoPlayer } from "./EditableVideoPlayer";
 import type { TebikiManual, TebikiManualStep, TebikiQuiz, TebikiQuizAttempt } from "@/types/tebiki";
 
 export function ManualViewerClient({
@@ -55,35 +56,27 @@ export function ManualViewerClient({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
       <div>
-        <div className="overflow-hidden rounded-xl bg-black">
-          {activeStep.videoPath ? (
-            <video
-              key={activeStep.id}
-              controls
-              className="aspect-video w-full"
-              src={`/api/media/manuals/${manual.id}/steps/${activeStep.id}`}
-              poster={
-                activeStep.thumbnailPath
-                  ? `/api/media/manuals/${manual.id}/steps/${activeStep.id}/thumbnail`
-                  : undefined
-              }
-            >
-              {activeStep.captionStatus === "done" && (
-                <track
-                  kind="captions"
-                  srcLang="zh-Hant"
-                  label="繁體中文"
-                  src={`/api/media/manuals/${manual.id}/steps/${activeStep.id}/captions.vtt`}
-                  default
-                />
-              )}
-            </video>
-          ) : (
-            <div className="flex aspect-video items-center justify-center text-sm text-white/60">
-              此步驟尚未上傳影片
-            </div>
-          )}
-        </div>
+        {activeStep.videoPath ? (
+          <EditableVideoPlayer
+            key={activeStep.id}
+            src={`/api/media/manuals/${manual.id}/steps/${activeStep.id}`}
+            poster={
+              activeStep.thumbnailPath
+                ? `/api/media/manuals/${manual.id}/steps/${activeStep.id}/thumbnail`
+                : undefined
+            }
+            captionSrc={
+              activeStep.captionStatus === "done"
+                ? `/api/media/manuals/${manual.id}/steps/${activeStep.id}/captions.vtt`
+                : undefined
+            }
+            editData={activeStep.editData}
+          />
+        ) : (
+          <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-white/60">
+            此步驟尚未上傳影片
+          </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-tebiki-border bg-white p-4">
           <p className="text-sm font-bold text-[#2B2C2F]">

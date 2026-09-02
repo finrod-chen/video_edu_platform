@@ -1,6 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { ManualStatus, TebikiManual, TebikiManualStep } from "@/types/tebiki";
+import type { ManualStatus, ManualStepEditData, TebikiManual, TebikiManualStep } from "@/types/tebiki";
 
 export type { ManualStatus };
 
@@ -155,6 +155,7 @@ interface StepRow extends RowDataPacket {
   duration_seconds: number | null;
   captions_vtt: string | null;
   caption_status: "none" | "pending" | "done" | "failed";
+  edit_data: ManualStepEditData | string | null;
 }
 
 function mapStep(r: StepRow): TebikiManualStep {
@@ -168,11 +169,13 @@ function mapStep(r: StepRow): TebikiManualStep {
     durationSeconds: r.duration_seconds,
     captionsVtt: r.captions_vtt,
     captionStatus: r.caption_status,
+    // mysql2 usually auto-parses JSON columns, but handle the raw-string case defensively.
+    editData: typeof r.edit_data === "string" ? JSON.parse(r.edit_data) : r.edit_data,
   };
 }
 
 const STEP_SELECT =
-  "SELECT id, manual_id, position, title, video_path, thumbnail_path, duration_seconds, captions_vtt, caption_status FROM manual_steps";
+  "SELECT id, manual_id, position, title, video_path, thumbnail_path, duration_seconds, captions_vtt, caption_status, edit_data FROM manual_steps";
 
 export async function getManualSteps(manualId: number): Promise<TebikiManualStep[]> {
   const [rows] = await db.query(`${STEP_SELECT} WHERE manual_id = ? ORDER BY position ASC`, [manualId]);
@@ -214,6 +217,7 @@ export async function updateManualStep(
     durationSeconds?: number;
     captionsVtt?: string | null;
     captionStatus?: "none" | "pending" | "done" | "failed";
+    editData?: ManualStepEditData | null;
   }
 ): Promise<void> {
   const columnMap: Record<string, string> = {
@@ -232,6 +236,10 @@ export async function updateManualStep(
       sets.push(`${column} = ?`);
       params.push(value);
     }
+  }
+  if (fields.editData !== undefined) {
+    sets.push("edit_data = ?");
+    params.push(fields.editData === null ? null : JSON.stringify(fields.editData));
   }
   // A freshly-uploaded video invalidates any previous transcription for this step.
   if (fields.videoPath !== undefined && fields.captionsVtt === undefined && fields.captionStatus === undefined) {
