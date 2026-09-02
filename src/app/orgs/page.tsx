@@ -1,4 +1,4 @@
-import { OrgSettingsShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgSettingsShell";
+import { OrgSettingsShell } from "@/components/sites/training-platform/shared/OrgSettingsShell";
 import { getOrg } from "@/lib/queries/org";
 import { CURRENT_ORG_ID, requireAdmin } from "@/lib/current-viewer";
 
@@ -18,7 +18,7 @@ export default async function OrgInfoPage() {
 
   return (
     <OrgSettingsShell active="公司" breadcrumbExtra="設定">
-      <div className="divide-y divide-tebiki-border">
+      <div className="divide-y divide-app-border">
         {fields.map((f) => (
           <div key={f.label} className="py-4 first:pt-0">
             <p className="mb-1 text-sm font-bold text-[#2B2C2F]">{f.label}</p>

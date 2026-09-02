@@ -1,6 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { ManualStatus, TebikiCourse, TebikiCourseManual } from "@/types/tebiki";
+import type { ManualStatus, Course, CourseManual } from "@/types/models";
 
 interface CourseRow extends RowDataPacket {
   id: number;
@@ -9,7 +9,7 @@ interface CourseRow extends RowDataPacket {
   has_been_published: number | boolean;
 }
 
-function mapCourse(r: CourseRow): TebikiCourse {
+function mapCourse(r: CourseRow): Course {
   return {
     id: String(r.id),
     title: r.title,
@@ -19,7 +19,7 @@ function mapCourse(r: CourseRow): TebikiCourse {
 }
 
 /** 課程是獨立的教學組合概念（可彙整多本手冊），不屬於任何資料夾。 */
-export async function getCourses(orgId: number, statuses?: ManualStatus[]): Promise<TebikiCourse[]> {
+export async function getCourses(orgId: number, statuses?: ManualStatus[]): Promise<Course[]> {
   const params: (string | number)[] = [orgId];
   let statusClause = "";
   if (statuses && statuses.length > 0) {
@@ -33,7 +33,7 @@ export async function getCourses(orgId: number, statuses?: ManualStatus[]): Prom
   return (rows as CourseRow[]).map(mapCourse);
 }
 
-export async function getCourseById(orgId: number, courseId: number): Promise<TebikiCourse | null> {
+export async function getCourseById(orgId: number, courseId: number): Promise<Course | null> {
   const [rows] = await db.query(
     "SELECT id, title, status, has_been_published FROM courses WHERE id = ? AND org_id = ?",
     [courseId, orgId]
@@ -85,7 +85,7 @@ interface CourseManualRow extends RowDataPacket {
   position: number;
 }
 
-export async function getCourseManuals(courseId: number): Promise<TebikiCourseManual[]> {
+export async function getCourseManuals(courseId: number): Promise<CourseManual[]> {
   const [rows] = await db.query(
     `SELECT cm.manual_id, m.title, cm.position
      FROM course_manuals cm

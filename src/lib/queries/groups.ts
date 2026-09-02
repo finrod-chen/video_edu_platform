@@ -1,6 +1,6 @@
 import type { RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { TebikiUserGroup } from "@/types/tebiki";
+import type { UserGroup } from "@/types/models";
 
 interface GroupRow extends RowDataPacket {
   id: number;
@@ -8,7 +8,7 @@ interface GroupRow extends RowDataPacket {
   description: string;
 }
 
-export async function getUserGroups(orgId: number): Promise<TebikiUserGroup[]> {
+export async function getUserGroups(orgId: number): Promise<UserGroup[]> {
   const [rows] = await db.query(
     "SELECT id, name, description FROM user_groups WHERE org_id = ? ORDER BY name ASC",
     [orgId]

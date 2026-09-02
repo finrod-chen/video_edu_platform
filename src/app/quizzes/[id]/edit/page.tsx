@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { QuizEditorClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/quizzes/QuizEditorClient";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { QuizEditorClient } from "@/components/sites/training-platform/quizzes/QuizEditorClient";
 import { getQuizById, getQuizQuestions } from "@/lib/queries/quizzes";
 import { getManuals } from "@/lib/queries/manuals";
 import { getCourses } from "@/lib/queries/courses";

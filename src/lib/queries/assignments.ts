@@ -1,7 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
 import { manualCompletedExpr } from "@/lib/queries/completion";
-import type { TebikiAssignment, TebikiMyAssignment } from "@/types/tebiki";
+import type { Assignment, MyAssignment } from "@/types/models";
 
 interface AssignmentRow extends RowDataPacket {
   id: number;
@@ -15,7 +15,7 @@ interface AssignmentRow extends RowDataPacket {
   completed_count: number;
 }
 
-export async function getAssignmentsForOrg(orgId: number): Promise<TebikiAssignment[]> {
+export async function getAssignmentsForOrg(orgId: number): Promise<Assignment[]> {
   const [rows] = await db.query(
     `SELECT a.id, a.manual_id, m.title AS manual_title, u.name AS assigned_by_name,
             a.due_date, a.note, a.created_at,
@@ -52,7 +52,7 @@ interface MyAssignmentRow extends RowDataPacket {
   completed: number;
 }
 
-export async function getAssignmentsForUser(userId: number): Promise<TebikiMyAssignment[]> {
+export async function getAssignmentsForUser(userId: number): Promise<MyAssignment[]> {
   const [rows] = await db.query(
     `SELECT a.id, a.manual_id, m.title AS manual_title, a.due_date,
             ${manualCompletedExpr("a.manual_id", "at.user_id")} AS completed

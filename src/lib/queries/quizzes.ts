@@ -3,11 +3,11 @@ import { db } from "@/lib/db";
 import type {
   ManualStatus,
   QuizScope,
-  TebikiQuiz,
-  TebikiQuizAttempt,
-  TebikiQuizChoice,
-  TebikiQuizQuestion,
-} from "@/types/tebiki";
+  Quiz,
+  QuizAttempt,
+  QuizChoice,
+  QuizQuestion,
+} from "@/types/models";
 
 interface QuizRow extends RowDataPacket {
   id: number;
@@ -21,7 +21,7 @@ interface QuizRow extends RowDataPacket {
   updated_at: string;
 }
 
-function mapQuiz(r: QuizRow): TebikiQuiz {
+function mapQuiz(r: QuizRow): Quiz {
   return {
     id: String(r.id),
     scope: r.scope,
@@ -38,18 +38,18 @@ function mapQuiz(r: QuizRow): TebikiQuiz {
 const QUIZ_SELECT =
   "SELECT id, scope, manual_id, course_id, title, pass_score, status, has_been_published, updated_at FROM quizzes";
 
-export async function getQuizzes(orgId: number): Promise<TebikiQuiz[]> {
+export async function getQuizzes(orgId: number): Promise<Quiz[]> {
   const [rows] = await db.query(`${QUIZ_SELECT} WHERE org_id = ? ORDER BY updated_at DESC`, [orgId]);
   return (rows as QuizRow[]).map(mapQuiz);
 }
 
-export async function getQuizById(orgId: number, quizId: number): Promise<TebikiQuiz | null> {
+export async function getQuizById(orgId: number, quizId: number): Promise<Quiz | null> {
   const [rows] = await db.query(`${QUIZ_SELECT} WHERE id = ? AND org_id = ?`, [quizId, orgId]);
   const row = (rows as QuizRow[])[0];
   return row ? mapQuiz(row) : null;
 }
 
-export async function getPublishedQuizForManual(orgId: number, manualId: number): Promise<TebikiQuiz | null> {
+export async function getPublishedQuizForManual(orgId: number, manualId: number): Promise<Quiz | null> {
   const [rows] = await db.query(
     `${QUIZ_SELECT} WHERE org_id = ? AND scope = 'manual' AND manual_id = ? AND status = 'published' LIMIT 1`,
     [orgId, manualId]
@@ -59,7 +59,7 @@ export async function getPublishedQuizForManual(orgId: number, manualId: number)
 }
 
 /** Unlike getPublishedQuizForManual, this also returns draft quizzes so the manual editor can show/link to a quiz that's still being authored. Trashed quizzes count as "no quiz bound". */
-export async function getQuizForManual(orgId: number, manualId: number): Promise<TebikiQuiz | null> {
+export async function getQuizForManual(orgId: number, manualId: number): Promise<Quiz | null> {
   const [rows] = await db.query(
     `${QUIZ_SELECT} WHERE org_id = ? AND scope = 'manual' AND manual_id = ? AND status != 'trashed' LIMIT 1`,
     [orgId, manualId]
@@ -68,7 +68,7 @@ export async function getQuizForManual(orgId: number, manualId: number): Promise
   return row ? mapQuiz(row) : null;
 }
 
-export async function getPublishedQuizForCourse(orgId: number, courseId: number): Promise<TebikiQuiz | null> {
+export async function getPublishedQuizForCourse(orgId: number, courseId: number): Promise<Quiz | null> {
   const [rows] = await db.query(
     `${QUIZ_SELECT} WHERE org_id = ? AND scope = 'course' AND course_id = ? AND status = 'published' LIMIT 1`,
     [orgId, courseId]
@@ -139,7 +139,7 @@ interface ChoiceRow extends RowDataPacket {
 }
 
 /** Includes `isCorrect` -- editor-only. Never pass straight through to the employee-facing take page. */
-export async function getQuizQuestions(quizId: number): Promise<TebikiQuizQuestion[]> {
+export async function getQuizQuestions(quizId: number): Promise<QuizQuestion[]> {
   const [questionRows] = await db.query(
     "SELECT id, quiz_id, position, prompt FROM quiz_questions WHERE quiz_id = ? ORDER BY position ASC",
     [quizId]
@@ -152,7 +152,7 @@ export async function getQuizQuestions(quizId: number): Promise<TebikiQuizQuesti
      WHERE question_id IN (${questions.map(() => "?").join(",")}) ORDER BY position ASC`,
     questions.map((q) => q.id)
   );
-  const choicesByQuestion = new Map<number, TebikiQuizChoice[]>();
+  const choicesByQuestion = new Map<number, QuizChoice[]>();
   for (const c of choiceRows as ChoiceRow[]) {
     const list = choicesByQuestion.get(c.question_id) ?? [];
     list.push({ id: String(c.id), label: c.label, isCorrect: Boolean(c.is_correct) });
@@ -238,7 +238,7 @@ interface AttemptRow extends RowDataPacket {
   submitted_at: string;
 }
 
-export async function getLatestAttempt(quizId: number, userId: number): Promise<TebikiQuizAttempt | null> {
+export async function getLatestAttempt(quizId: number, userId: number): Promise<QuizAttempt | null> {
   const [rows] = await db.query(
     "SELECT id, quiz_id, score, passed, submitted_at FROM quiz_attempts WHERE quiz_id = ? AND user_id = ? ORDER BY submitted_at DESC LIMIT 1",
     [quizId, userId]

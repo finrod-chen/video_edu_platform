@@ -82,7 +82,10 @@ CREATE TABLE IF NOT EXISTS manual_steps (
   manual_id INT NOT NULL,
   position INT NOT NULL DEFAULT 0,
   title VARCHAR(255) NOT NULL DEFAULT '',
+  -- 一個步驟只會是影片或圖片其中一種，media_type 決定要讀哪個路徑欄位。
+  media_type ENUM('video','image') NOT NULL DEFAULT 'video',
   video_path VARCHAR(500) NULL,
+  image_path VARCHAR(500) NULL,
   thumbnail_path VARCHAR(500) NULL,
   duration_seconds INT NULL,
   captions_vtt MEDIUMTEXT NULL,
@@ -97,6 +100,21 @@ CREATE TABLE IF NOT EXISTS manual_steps (
   FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,
   FOREIGN KEY (edit_lock_user_id) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_steps_manual (manual_id, position)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 手冊層級 PDF 附件（SOP／表單），站內預覽用，不對外提供靜態下載連結。
+CREATE TABLE IF NOT EXISTS manual_attachments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  manual_id INT NOT NULL,
+  org_id INT NOT NULL,
+  file_path VARCHAR(500) NOT NULL,
+  original_filename VARCHAR(255) NOT NULL,
+  file_size INT NOT NULL,
+  uploaded_by INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,
+  FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS manual_tags (
@@ -150,6 +168,9 @@ CREATE TABLE IF NOT EXISTS tasks (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 已停用：從來沒有任何程式碼寫入過這張表（migration 002）。改用下面的
+-- manual_daily_visits（migration 010，即時聚合，不用背景 job 算 rollup）。
+-- 留著不刪，沒有任何程式碼再讀寫這張表。
 CREATE TABLE IF NOT EXISTS manual_view_daily (
   id INT PRIMARY KEY AUTO_INCREMENT,
   org_id INT NOT NULL,
@@ -158,6 +179,21 @@ CREATE TABLE IF NOT EXISTS manual_view_daily (
   watch_hours DECIMAL(10,2) NOT NULL DEFAULT 0,
   FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
   UNIQUE KEY uniq_org_date (org_id, visit_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 手冊觀看事件：每位使用者每天每本手冊一列，累加觀看秒數。
+-- 「造訪」＝該列存在（即使 watch_seconds=0），report 查詢時直接聚合。
+CREATE TABLE IF NOT EXISTS manual_daily_visits (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  org_id INT NOT NULL,
+  manual_id INT NOT NULL,
+  user_id INT NOT NULL,
+  visit_date DATE NOT NULL,
+  watch_seconds INT NOT NULL DEFAULT 0,
+  UNIQUE KEY uniq_visit (manual_id, user_id, visit_date),
+  FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 已停用：手冊層級的「已瞭解」（migration 004）。改用下面的

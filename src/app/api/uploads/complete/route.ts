@@ -45,7 +45,9 @@ export async function POST(request: Request) {
   }
 
   await updateManualStep(stepIdNum, {
+    mediaType: "video",
     videoPath,
+    imagePath: null,
     ...(thumbnailPath ? { thumbnailPath } : {}),
     ...(typeof durationSeconds === "string" && /^\d+$/.test(durationSeconds)
       ? { durationSeconds: Number(durationSeconds) }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createQuiz } from "@/lib/queries/quizzes";
 import { CURRENT_ORG_ID, getCurrentUser, isEditorOrAbove } from "@/lib/current-viewer";
-import type { QuizScope } from "@/types/tebiki";
+import type { QuizScope } from "@/types/models";
 
 export async function POST(request: Request) {
   const { id: userId, role } = await getCurrentUser();

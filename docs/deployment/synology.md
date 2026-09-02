@@ -50,7 +50,7 @@ DB_HOST=你的MySQL主機位址        # 例如 192.168.1.10，或 NAS 上跑 Ma
 DB_PORT=3306
 DB_USER=app_user
 DB_PASSWORD=你的真實密碼           # 不要留空
-DB_NAME=tebiki_clone            # 建議依實際資料庫名稱調整
+DB_NAME=training_platform       # 建議依實際資料庫名稱調整
 DB_CONNECTION_LIMIT=10
 
 # Next.js server 對外埠號（容器內固定 3000，這裡改的是「主機」對外埠號）
@@ -156,6 +156,12 @@ mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/003_folders_and_roles.
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/004_acknowledgments_assignments.sql
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/005_quizzes.sql
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/006_caption_status.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/007_step_acknowledgments.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/008_step_edit_data.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/009_step_edit_lock.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/010_manual_daily_visits.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/011_manual_attachments.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/012_step_media_type.sql
 ```
 
 新安裝（空資料庫）直接跑最新的 `db/schema.sql` 即可，不需要另外跑這些 migration。

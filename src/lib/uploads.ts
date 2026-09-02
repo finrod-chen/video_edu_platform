@@ -26,6 +26,10 @@ export function manualStepDir(manualId: number, stepId: number): string {
   return path.join(uploadRoot(), "manuals", String(manualId), "steps", String(stepId));
 }
 
+export function manualAttachmentDir(manualId: number): string {
+  return path.join(uploadRoot(), "manuals", String(manualId), "attachments");
+}
+
 export async function writeChunk(uploadId: string, index: number, data: Buffer): Promise<void> {
   const dir = tmpChunkDir(uploadId);
   await mkdir(dir, { recursive: true });
@@ -39,6 +43,9 @@ const EXT_BY_MIME: Record<string, string> = {
   "video/quicktime": "mov",
   "video/x-msvideo": "avi",
   "video/x-matroska": "mkv",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
 };
 
 export function extensionForMime(mimeType: string, fallback = "mp4"): string {
@@ -100,8 +107,37 @@ export async function saveThumbnail(
   return relativePath.split(path.sep).join("/");
 }
 
+export async function saveStepImage(
+  manualId: number,
+  stepId: number,
+  data: Buffer,
+  extension: string
+): Promise<string> {
+  const destDir = manualStepDir(manualId, stepId);
+  await mkdir(destDir, { recursive: true });
+  const relativePath = path.join("manuals", String(manualId), "steps", String(stepId), `image.${extension}`);
+  await writeFile(path.join(uploadRoot(), relativePath), data);
+  return relativePath.split(path.sep).join("/");
+}
+
 export async function deleteManualStepFiles(manualId: number, stepId: number): Promise<void> {
   await rm(manualStepDir(manualId, stepId), { recursive: true, force: true });
+}
+
+export async function saveManualAttachment(
+  manualId: number,
+  attachmentId: number,
+  data: Buffer
+): Promise<string> {
+  const destDir = manualAttachmentDir(manualId);
+  await mkdir(destDir, { recursive: true });
+  const relativePath = path.join("manuals", String(manualId), "attachments", `${attachmentId}.pdf`);
+  await writeFile(path.join(uploadRoot(), relativePath), data);
+  return relativePath.split(path.sep).join("/");
+}
+
+export async function deleteManualAttachmentFile(manualId: number, attachmentId: number): Promise<void> {
+  await rm(path.join(manualAttachmentDir(manualId), `${attachmentId}.pdf`), { force: true });
 }
 
 export async function deleteManualFiles(manualId: number): Promise<void> {

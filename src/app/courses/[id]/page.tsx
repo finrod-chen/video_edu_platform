@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { CourseDetailClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/courses/CourseDetailClient";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { CourseDetailClient } from "@/components/sites/training-platform/courses/CourseDetailClient";
 import { getCourseById, getCourseManuals } from "@/lib/queries/courses";
 import { getManuals } from "@/lib/queries/manuals";
 import { getCompletedManualIds } from "@/lib/queries/completion";

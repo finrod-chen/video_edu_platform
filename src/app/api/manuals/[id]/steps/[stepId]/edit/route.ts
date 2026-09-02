@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { updateManualStep } from "@/lib/queries/manuals";
 import { getCurrentUser, isEditorOrAbove } from "@/lib/current-viewer";
-import type { ManualStepAnnotation, ManualStepEditData } from "@/types/tebiki";
+import type { ManualStepAnnotation, ManualStepEditData } from "@/types/models";
 
 const VALID_ROTATIONS = [0, 90, 180, 270];
 const VALID_ANNOTATION_TYPES = ["text", "arrow", "rect", "blur"];

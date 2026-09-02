@@ -1,5 +1,5 @@
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { NewQuizForm } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/quizzes/NewQuizForm";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { NewQuizForm } from "@/components/sites/training-platform/quizzes/NewQuizForm";
 import { getManuals } from "@/lib/queries/manuals";
 import { getCourses } from "@/lib/queries/courses";
 import { CURRENT_ORG_ID, requireEditor } from "@/lib/current-viewer";
@@ -17,7 +17,7 @@ export default async function NewQuizPage() {
   return (
     <DashboardShell activeKey="quizzes" breadcrumb={["首頁", "測驗管理", "新增"]}>
       <h1 className="mb-6 text-xl font-bold text-[#2B2C2F]">新增測驗</h1>
-      <div className="rounded-xl border border-tebiki-border bg-white p-6">
+      <div className="rounded-xl border border-app-border bg-white p-6">
         <NewQuizForm manuals={manuals} courses={courses} />
       </div>
     </DashboardShell>

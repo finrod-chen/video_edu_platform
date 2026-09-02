@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { deleteQuiz, getQuizById, updateQuiz } from "@/lib/queries/quizzes";
 import { CURRENT_ORG_ID, getCurrentUser, isAdmin, isEditorOrAbove } from "@/lib/current-viewer";
-import type { ManualStatus } from "@/types/tebiki";
+import type { ManualStatus } from "@/types/models";
 
 const VALID_STATUSES: ManualStatus[] = ["published", "draft", "trashed"];
 

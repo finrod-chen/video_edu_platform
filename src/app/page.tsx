@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
 import { getManuals } from "@/lib/queries/manuals";
 import { getTasks } from "@/lib/queries/tasks";
 import { getAssignmentsForUser } from "@/lib/queries/assignments";
@@ -21,7 +21,7 @@ export default async function HomePage() {
   return (
     <DashboardShell activeKey="home" breadcrumb={["首頁"]}>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
-        <section className="rounded-xl border border-tebiki-border bg-white p-6">
+        <section className="rounded-xl border border-app-border bg-white p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-[#2B2C2F]">新手冊</h2>
             <Link href="/manuals" className="text-sm text-brand hover:underline">
@@ -31,7 +31,7 @@ export default async function HomePage() {
           {recentManuals.length === 0 ? (
             <p className="mt-4 text-sm text-[#8B93A1]">沒有數據</p>
           ) : (
-            <ul className="mt-4 divide-y divide-tebiki-border">
+            <ul className="mt-4 divide-y divide-app-border">
               {recentManuals.map((m) => (
                 <li key={m.id} className="flex items-center justify-between py-2.5 text-sm">
                   <Link href="/manuals" className="text-[#2B2C2F] hover:text-brand">
@@ -44,7 +44,7 @@ export default async function HomePage() {
           )}
         </section>
 
-        <section className="rounded-xl border border-tebiki-border bg-white p-6">
+        <section className="rounded-xl border border-app-border bg-white p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-[#2B2C2F]">我的任務</h2>
             <Link href="/tasks" className="text-sm text-brand hover:underline">
@@ -72,7 +72,7 @@ export default async function HomePage() {
       </div>
 
       {myAssignments.length > 0 && (
-        <section className="mt-4 rounded-xl border border-tebiki-border bg-white p-6">
+        <section className="mt-4 rounded-xl border border-app-border bg-white p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-[#2B2C2F]">指派給我的手冊</h2>
             <span className="text-xs text-[#8B93A1]">
@@ -82,7 +82,7 @@ export default async function HomePage() {
           {pendingAssignments.length === 0 ? (
             <p className="mt-4 text-sm text-[#8B93A1]">所有指派的手冊都已完成，做得好！</p>
           ) : (
-            <ul className="mt-4 divide-y divide-tebiki-border">
+            <ul className="mt-4 divide-y divide-app-border">
               {pendingAssignments.map((a) => (
                 <li key={a.id} className="flex items-center justify-between py-2.5 text-sm">
                   <Link href={`/manuals/${a.manualId}`} className="text-brand hover:underline">

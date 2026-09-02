@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { deleteManual, getManualById, updateManual } from "@/lib/queries/manuals";
 import { CURRENT_ORG_ID, getCurrentUser, isAdmin, isEditorOrAbove } from "@/lib/current-viewer";
 import { deleteManualFiles } from "@/lib/uploads";
-import type { ManualStatus } from "@/types/tebiki";
+import type { ManualStatus } from "@/types/models";
 
 const VALID_STATUSES: ManualStatus[] = ["published", "draft", "trashed"];
 

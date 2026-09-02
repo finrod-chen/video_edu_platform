@@ -1,5 +1,5 @@
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { AssignmentsClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/AssignmentsClient";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { AssignmentsClient } from "@/components/sites/training-platform/shared/AssignmentsClient";
 import { getAssignmentsForOrg } from "@/lib/queries/assignments";
 import { getManuals } from "@/lib/queries/manuals";
 import { getOrgUsers } from "@/lib/queries/users";

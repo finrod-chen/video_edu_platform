@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { DashboardShell, EmptyState } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { PlusIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
+import { DashboardShell, EmptyState } from "@/components/sites/training-platform/shared/DashboardShell";
+import { PlusIcon } from "@/components/sites/training-platform/shared/icons";
 import { getQuizzes } from "@/lib/queries/quizzes";
 import { getManuals } from "@/lib/queries/manuals";
 import { getCourses } from "@/lib/queries/courses";
 import { CURRENT_ORG_ID, requireEditor } from "@/lib/current-viewer";
-import type { ManualStatus } from "@/types/tebiki";
+import type { ManualStatus } from "@/types/models";
 
 const STATUS_LABEL: Record<ManualStatus, string> = {
   draft: "草稿",
@@ -44,13 +44,13 @@ export default async function QuizzesPage() {
         </Link>
       </div>
 
-      <div className="rounded-xl border border-tebiki-border bg-white">
+      <div className="rounded-xl border border-app-border bg-white">
         {quizzes.length === 0 ? (
           <EmptyState title="沒有數據" />
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-t border-tebiki-border text-left text-[#8B93A1]">
+              <tr className="border-t border-app-border text-left text-[#8B93A1]">
                 <th className="px-6 py-3 font-medium">標題</th>
                 <th className="px-6 py-3 font-medium">範圍</th>
                 <th className="px-6 py-3 font-medium">狀態</th>
@@ -59,7 +59,7 @@ export default async function QuizzesPage() {
             </thead>
             <tbody>
               {quizzes.map((q) => (
-                <tr key={q.id} className="border-t border-tebiki-border">
+                <tr key={q.id} className="border-t border-app-border">
                   <td className="px-6 py-3">
                     <Link href={`/quizzes/${q.id}/edit`} className="text-brand hover:underline">
                       {q.title}

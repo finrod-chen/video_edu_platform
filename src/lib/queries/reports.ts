@@ -8,27 +8,47 @@ import type {
   RankingEntry,
   ReportSummary,
   VisitorDataPoint,
-} from "@/types/tebiki";
+} from "@/types/models";
 
 interface DailyRow extends RowDataPacket {
   visit_date: string;
   visitor_count: number;
-  watch_hours: string;
+  watch_seconds: string;
 }
 
 export async function getVisitorSeries(orgId: number, days = 30): Promise<VisitorDataPoint[]> {
   const [rows] = await db.query(
-    `SELECT visit_date, visitor_count, watch_hours
-     FROM manual_view_daily
+    `SELECT visit_date, COUNT(DISTINCT user_id) AS visitor_count, SUM(watch_seconds) AS watch_seconds
+     FROM manual_daily_visits
      WHERE org_id = ? AND visit_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+     GROUP BY visit_date
      ORDER BY visit_date ASC`,
     [orgId, days]
   );
   return (rows as DailyRow[]).map((r) => ({
     date: r.visit_date,
     visitors: r.visitor_count,
-    watchHours: Number(r.watch_hours),
+    watchHours: Number(r.watch_seconds) / 3600,
   }));
+}
+
+/**
+ * Registers a manual view for today (creating the row even with
+ * watchSeconds=0 counts as a "visit"), and atomically adds to the
+ * accumulated watch time for that user/manual/day.
+ */
+export async function recordManualView(
+  orgId: number,
+  manualId: number,
+  userId: number,
+  watchSeconds = 0
+): Promise<void> {
+  await db.execute(
+    `INSERT INTO manual_daily_visits (org_id, manual_id, user_id, visit_date, watch_seconds)
+     VALUES (?, ?, ?, CURDATE(), ?)
+     ON DUPLICATE KEY UPDATE watch_seconds = watch_seconds + VALUES(watch_seconds)`,
+    [orgId, manualId, userId, watchSeconds]
+  );
 }
 
 interface SummaryRow extends RowDataPacket {
@@ -41,7 +61,7 @@ interface SummaryRow extends RowDataPacket {
 export async function getReportSummary(orgId: number): Promise<ReportSummary> {
   const [rows] = await db.query(
     `SELECT
-       COALESCE((SELECT SUM(watch_hours) FROM manual_view_daily WHERE org_id = ?), 0) AS manual_watch_hours,
+       COALESCE((SELECT SUM(watch_seconds) FROM manual_daily_visits WHERE org_id = ?), 0) / 3600 AS manual_watch_hours,
        (SELECT COUNT(*) FROM courses WHERE org_id = ?) AS course_count,
        (SELECT COUNT(*) FROM manuals WHERE org_id = ? AND status = 'published') AS manual_count,
        (SELECT COUNT(*) FROM users WHERE org_id = ? AND status = 'active') AS user_count`,

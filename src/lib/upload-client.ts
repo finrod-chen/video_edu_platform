@@ -110,3 +110,54 @@ export async function uploadManualStepVideo(
 
   return completeRes.json();
 }
+
+export interface AttachmentUploadResult {
+  id: string;
+  manualId: string;
+  fileName: string;
+  fileSize: number;
+}
+
+/** PDFs are small enough that a single-shot upload is fine -- no chunking needed. */
+export async function uploadManualAttachment(
+  manualId: string,
+  file: File
+): Promise<AttachmentUploadResult> {
+  if (file.type !== "application/pdf") {
+    throw new Error("僅接受 PDF 檔案");
+  }
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`/api/manuals/${manualId}/attachments`, { method: "POST", body: formData });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error ?? "上傳失敗，請再試一次。");
+  }
+  return res.json();
+}
+
+export interface ImageUploadResult {
+  imagePath: string;
+}
+
+/** Images are small enough that a single-shot upload is fine -- no chunking needed. */
+export async function uploadManualStepImage(
+  manualId: string,
+  stepId: string,
+  file: File,
+  onProgress?: (fraction: number) => void
+): Promise<ImageUploadResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  onProgress?.(0);
+  const res = await fetch(`/api/manuals/${manualId}/steps/${stepId}/image`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error ?? "上傳失敗，請再試一次。");
+  }
+  onProgress?.(1);
+  return res.json();
+}

@@ -1,5 +1,5 @@
-import { OrgSettingsShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgSettingsShell";
-import { SearchIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
+import { OrgSettingsShell } from "@/components/sites/training-platform/shared/OrgSettingsShell";
+import { SearchIcon } from "@/components/sites/training-platform/shared/icons";
 import { requireAdmin } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export default async function ExportsPage() {
   await requireAdmin();
   return (
     <OrgSettingsShell active="下載" breadcrumbExtra="下載">
-      <div className="mb-6 border-b border-tebiki-border pb-3">
+      <div className="mb-6 border-b border-app-border pb-3">
         <span className="border-b-2 border-brand pb-3 text-sm font-medium text-brand">視訊檔案</span>
       </div>
       <p className="mb-1 text-sm text-[#5B6270]">您可以下載已上傳的影片檔案。</p>
@@ -19,13 +19,13 @@ export default async function ExportsPage() {
         <input
           type="search"
           placeholder="透過影片手冊 URL 搜尋"
-          className="w-full rounded-lg border border-tebiki-border py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
+          className="w-full rounded-lg border border-app-border py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
         />
       </label>
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-t border-tebiki-border text-left text-[#8B93A1]">
+          <tr className="border-t border-app-border text-left text-[#8B93A1]">
             <th className="py-3 font-medium">標題</th>
             <th className="py-3 font-medium">上傳日期</th>
             <th className="py-3 font-medium">操作</th>

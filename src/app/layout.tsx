@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="zh-Hant"
       className={`${geistSans.variable} ${geistMono.variable} ${notoSansJP.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-tebiki">{children}</body>
+      <body className="min-h-full flex flex-col font-app">{children}</body>
     </html>
   );
 }

@@ -1,5 +1,5 @@
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { BookmarksClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/BookmarksClient";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { BookmarksClient } from "@/components/sites/training-platform/shared/BookmarksClient";
 import { getBookmarkedCourses, getBookmarkedManuals } from "@/lib/queries/bookmarks";
 import { getCurrentUserId } from "@/lib/current-viewer";
 

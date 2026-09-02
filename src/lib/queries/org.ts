@@ -1,6 +1,6 @@
 import type { RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { TebikiOrg } from "@/types/tebiki";
+import type { Org } from "@/types/models";
 
 interface OrgRow extends RowDataPacket {
   name: string;
@@ -9,7 +9,7 @@ interface OrgRow extends RowDataPacket {
   translation_language: string;
 }
 
-export async function getOrg(orgId: number): Promise<TebikiOrg | null> {
+export async function getOrg(orgId: number): Promise<Org | null> {
   const [rows] = await db.query(
     "SELECT name, plan_type, video_quality, translation_language FROM organizations WHERE id = ?",
     [orgId]

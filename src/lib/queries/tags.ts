@@ -1,6 +1,6 @@
 import type { RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { TebikiTag } from "@/types/tebiki";
+import type { Tag } from "@/types/models";
 
 interface TagRow extends RowDataPacket {
   id: number;
@@ -8,7 +8,7 @@ interface TagRow extends RowDataPacket {
   manual_count: number;
 }
 
-export async function getTags(orgId: number): Promise<TebikiTag[]> {
+export async function getTags(orgId: number): Promise<Tag[]> {
   const [rows] = await db.query(
     `SELECT t.id, t.name, COUNT(mt.manual_id) AS manual_count
      FROM tags t
@@ -30,7 +30,7 @@ interface ManualTagRow extends RowDataPacket {
   name: string;
 }
 
-export async function getTagsForManual(manualId: number): Promise<TebikiTag[]> {
+export async function getTagsForManual(manualId: number): Promise<Tag[]> {
   const [rows] = await db.query(
     `SELECT t.id, t.name
      FROM manual_tags mt
@@ -47,7 +47,7 @@ export async function addManualTag(
   orgId: number,
   manualId: number,
   tagName: string
-): Promise<TebikiTag> {
+): Promise<Tag> {
   const name = tagName.trim();
   await db.execute(
     "INSERT IGNORE INTO tags (org_id, name) VALUES (?, ?)",

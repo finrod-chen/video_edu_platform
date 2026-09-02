@@ -1,6 +1,6 @@
-import { SiteLogo } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
-import { mockOrg } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/mock-data";
-import { GoogleSignInButton } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/GoogleSignInButton";
+import { SiteLogo } from "@/components/sites/training-platform/shared/icons";
+import { mockOrg } from "@/components/sites/training-platform/shared/mock-data";
+import { GoogleSignInButton } from "@/components/sites/training-platform/shared/GoogleSignInButton";
 import { getOrg } from "@/lib/queries/org";
 import { CURRENT_ORG_ID } from "@/lib/current-viewer";
 import { ALLOWED_GOOGLE_DOMAIN } from "@/auth";

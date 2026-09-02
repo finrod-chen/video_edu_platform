@@ -1,6 +1,6 @@
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { MyPageClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/MyPageClient";
-import { mockUser } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/mock-data";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { MyPageClient } from "@/components/sites/training-platform/shared/MyPageClient";
+import { mockUser } from "@/components/sites/training-platform/shared/mock-data";
 import { getUser } from "@/lib/queries/users";
 import { getCurrentUserId } from "@/lib/current-viewer";
 

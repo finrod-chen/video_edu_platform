@@ -85,14 +85,14 @@ INSERT INTO quiz_attempts (id, quiz_id, user_id, score, passed) VALUES
 INSERT INTO quiz_attempt_answers (attempt_id, question_id, choice_id) VALUES
   (1, 1, 2);
 
--- 30 days of clearly-fictional report data ending today
-INSERT INTO manual_view_daily (org_id, visit_date, visitor_count, watch_hours)
-SELECT 1, DATE_SUB(CURDATE(), INTERVAL n DAY), FLOOR(1 + RAND() * 4), ROUND(RAND() * 2, 2)
-FROM (
-  SELECT a.N + b.N * 10 AS n
-  FROM (SELECT 0 N UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
-        UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) a,
-       (SELECT 0 N UNION SELECT 1 UNION SELECT 2) b
-  HAVING n < 30
-) days
-ON DUPLICATE KEY UPDATE visitor_count = VALUES(visitor_count);
+-- 14 days of clearly-fictional watch activity ending today, across the
+-- seeded users/manuals -- drives the company report's real
+-- manual_daily_visits-backed "獨立訪客和觀看時間" chart out of the box.
+INSERT INTO manual_daily_visits (org_id, manual_id, user_id, visit_date, watch_seconds)
+SELECT 1, m.manual_id, u.user_id, DATE_SUB(CURDATE(), INTERVAL d.n DAY), FLOOR(60 + RAND() * 600)
+FROM (SELECT 1 AS manual_id UNION SELECT 2) m,
+     (SELECT 1 AS user_id UNION SELECT 2 UNION SELECT 3) u,
+     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+      UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13) d
+WHERE RAND() < 0.5
+ON DUPLICATE KEY UPDATE watch_seconds = VALUES(watch_seconds);

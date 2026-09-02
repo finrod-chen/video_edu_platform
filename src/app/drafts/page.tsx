@@ -1,4 +1,4 @@
-import { ManualListPage } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/ManualListPage";
+import { ManualListPage } from "@/components/sites/training-platform/shared/ManualListPage";
 import { requireEditor } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";

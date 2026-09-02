@@ -1,5 +1,5 @@
-import { DashboardShell, EmptyState } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { PlusIcon, SearchIcon, SortIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
+import { DashboardShell, EmptyState } from "@/components/sites/training-platform/shared/DashboardShell";
+import { PlusIcon, SearchIcon, SortIcon } from "@/components/sites/training-platform/shared/icons";
 import { getTags } from "@/lib/queries/tags";
 import { CURRENT_ORG_ID } from "@/lib/current-viewer";
 
@@ -18,7 +18,7 @@ export default async function TagsPage() {
         </button>
       </div>
 
-      <div className="rounded-xl border border-tebiki-border bg-white">
+      <div className="rounded-xl border border-app-border bg-white">
         <div className="flex items-center justify-between gap-4 px-6 py-4">
           <div>
             <p className="mb-1 text-xs font-medium text-[#8B93A1]">搜尋標籤</p>
@@ -27,7 +27,7 @@ export default async function TagsPage() {
               <input
                 type="search"
                 placeholder="標籤名稱"
-                className="w-72 rounded-lg border border-tebiki-border bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
+                className="w-72 rounded-lg border border-app-border bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
               />
             </label>
           </div>
@@ -37,7 +37,7 @@ export default async function TagsPage() {
           </button>
         </div>
 
-        <table className="w-full border-t border-tebiki-border text-sm">
+        <table className="w-full border-t border-app-border text-sm">
           <thead>
             <tr className="text-left text-[#8B93A1]">
               <th className="px-6 py-3 font-medium">標籤名稱</th>
@@ -48,7 +48,7 @@ export default async function TagsPage() {
           {tags.length > 0 && (
             <tbody>
               {tags.map((tag) => (
-                <tr key={tag.id} className="border-t border-tebiki-border">
+                <tr key={tag.id} className="border-t border-app-border">
                   <td className="px-6 py-3 text-[#2B2C2F]">{tag.name}</td>
                   <td className="px-6 py-3 text-[#5B6270]">{tag.manualCount}</td>
                   <td className="px-6 py-3 text-[#8B93A1]">···</td>

@@ -1,5 +1,5 @@
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { CoursesClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/CoursesClient";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { CoursesClient } from "@/components/sites/training-platform/shared/CoursesClient";
 import { getCourses } from "@/lib/queries/courses";
 import { CURRENT_ORG_ID, getCurrentUser, isEditorOrAbove } from "@/lib/current-viewer";
 

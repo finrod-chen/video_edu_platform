@@ -1,5 +1,5 @@
-import { OrgSettingsShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgSettingsShell";
-import { OrgUsersClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgUsersClient";
+import { OrgSettingsShell } from "@/components/sites/training-platform/shared/OrgSettingsShell";
+import { OrgUsersClient } from "@/components/sites/training-platform/shared/OrgUsersClient";
 import { getOrgUsers } from "@/lib/queries/users";
 import { CURRENT_ORG_ID, requireAdmin } from "@/lib/current-viewer";
 

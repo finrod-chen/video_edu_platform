@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { ManualViewerClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/manuals/ManualViewerClient";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { ManualViewerClient } from "@/components/sites/training-platform/manuals/ManualViewerClient";
 import { getManualById, getManualSteps } from "@/lib/queries/manuals";
 import { getAcknowledgedStepIds, isLastStepAcknowledged } from "@/lib/queries/acknowledgments";
 import { getLatestAttempt, getPublishedQuizForManual } from "@/lib/queries/quizzes";
+import { listManualAttachments } from "@/lib/queries/attachments";
 import { CURRENT_ORG_ID, getCurrentUser, isEditorOrAbove } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
@@ -19,10 +20,11 @@ export default async function ManualViewPage({
 
   const manualId = Number(id);
   const currentUser = await getCurrentUser();
-  const [manual, steps, quiz] = await Promise.all([
+  const [manual, steps, quiz, attachments] = await Promise.all([
     getManualById(CURRENT_ORG_ID, manualId),
     getManualSteps(manualId),
     getPublishedQuizForManual(CURRENT_ORG_ID, manualId),
+    listManualAttachments(manualId),
   ]);
 
   if (!manual) notFound();
@@ -51,6 +53,7 @@ export default async function ManualViewPage({
         quiz={quiz}
         quizUnlocked={quizUnlocked}
         latestAttempt={latestAttempt}
+        attachments={attachments}
       />
     </DashboardShell>
   );

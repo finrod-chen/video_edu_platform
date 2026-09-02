@@ -1,4 +1,4 @@
-import { OrgSettingsShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/OrgSettingsShell";
+import { OrgSettingsShell } from "@/components/sites/training-platform/shared/OrgSettingsShell";
 import { getUserGroups } from "@/lib/queries/groups";
 import { CURRENT_ORG_ID, requireAdmin } from "@/lib/current-viewer";
 
@@ -18,7 +18,7 @@ export default async function GroupsPage() {
       </p>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-tebiki-border text-left text-[#8B93A1]">
+          <tr className="border-b border-app-border text-left text-[#8B93A1]">
             <th className="pb-3 font-medium">使用者群組名稱</th>
             <th className="pb-3 font-medium">使用者群組描述</th>
             <th className="pb-3 font-medium">操作</th>
@@ -27,7 +27,7 @@ export default async function GroupsPage() {
         {groups.length > 0 && (
           <tbody>
             {groups.map((g) => (
-              <tr key={g.id} className="border-b border-tebiki-border">
+              <tr key={g.id} className="border-b border-app-border">
                 <td className="py-3 text-[#2B2C2F]">{g.name}</td>
                 <td className="py-3 text-[#5B6270]">{g.description || "—"}</td>
                 <td className="py-3 text-[#8B93A1]">···</td>

@@ -1,7 +1,7 @@
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { mockOrg } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/mock-data";
-import { SearchIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
-import { VisitorChart } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/root-8a5edab2/VisitorChart";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { mockOrg } from "@/components/sites/training-platform/shared/mock-data";
+import { SearchIcon } from "@/components/sites/training-platform/shared/icons";
+import { VisitorChart } from "@/components/sites/training-platform/root-8a5edab2/VisitorChart";
 import { getOrg } from "@/lib/queries/org";
 import {
   getAcknowledgmentStats,
@@ -46,15 +46,15 @@ export default async function CompanyReportsPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
-          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+          <section className="rounded-xl border border-app-border bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-bold text-[#2B2C2F]">獨立訪客和觀看時間</h2>
             </div>
             <div className="mb-4 flex items-center justify-between">
-              <select className="rounded-lg border border-tebiki-border px-3 py-1.5 text-sm">
+              <select className="rounded-lg border border-app-border px-3 py-1.5 text-sm">
                 <option>所有人</option>
               </select>
-              <select className="rounded-lg border border-tebiki-border px-3 py-1.5 text-sm">
+              <select className="rounded-lg border border-app-border px-3 py-1.5 text-sm">
                 <option>本月</option>
               </select>
             </div>
@@ -65,7 +65,7 @@ export default async function CompanyReportsPage() {
             <VisitorChart series={series} />
           </section>
 
-          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+          <section className="rounded-xl border border-app-border bg-white p-6">
             <h2 className="mb-1 text-base font-bold text-[#2B2C2F]">搜尋學習進度</h2>
             <p className="mb-4 text-sm text-[#8B93A1]">搜尋課程或相關資料夾來管理進度。</p>
             <label className="relative flex items-center">
@@ -73,12 +73,12 @@ export default async function CompanyReportsPage() {
               <input
                 type="search"
                 placeholder="輸入相關資料夾名稱或課程標題"
-                className="w-full rounded-lg border border-tebiki-border py-2 pl-9 pr-24 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
+                className="w-full rounded-lg border border-app-border py-2 pl-9 pr-24 text-sm placeholder:text-[#B0B6C0] focus:outline-none focus:ring-2 focus:ring-brand/40"
               />
-              <button className="absolute right-2 rounded-md bg-tebiki-bg px-3 py-1 text-xs font-medium text-[#5B6270]">進階搜尋</button>
+              <button className="absolute right-2 rounded-md bg-app-bg px-3 py-1 text-xs font-medium text-[#5B6270]">進階搜尋</button>
             </label>
             <p className="mt-6 mb-2 text-sm font-medium text-[#2B2C2F]">搜尋紀錄</p>
-            <div className="flex justify-between border-t border-tebiki-border pt-3 text-xs text-[#8B93A1]">
+            <div className="flex justify-between border-t border-app-border pt-3 text-xs text-[#8B93A1]">
               <span>資料夾/課程</span>
               <span>使用者/使用者群組</span>
             </div>
@@ -86,7 +86,7 @@ export default async function CompanyReportsPage() {
         </div>
 
         <aside className="space-y-4">
-          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+          <section className="rounded-xl border border-app-border bg-white p-6">
             <p className="mb-1 text-sm font-bold text-[#2B2C2F]">{org?.name ?? mockOrg.name}</p>
             <p className="mb-4 text-xs text-[#8B93A1]">週期：所有時間</p>
             <div className="grid grid-cols-2 gap-y-4 text-center">
@@ -102,7 +102,7 @@ export default async function CompanyReportsPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+          <section className="rounded-xl border border-app-border bg-white p-6">
             <div className="mb-1 flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#2B2C2F]">用戶訪問排名</h3>
             </div>
@@ -120,7 +120,7 @@ export default async function CompanyReportsPage() {
             )}
           </section>
 
-          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+          <section className="rounded-xl border border-app-border bg-white p-6">
             <h3 className="mb-3 text-sm font-bold text-[#2B2C2F]">測驗通過率</h3>
             {quizStats.attemptCount > 0 ? (
               <div className="grid grid-cols-2 gap-y-3 text-center">
@@ -138,7 +138,7 @@ export default async function CompanyReportsPage() {
             )}
           </section>
 
-          <section className="rounded-xl border border-tebiki-border bg-white p-6">
+          <section className="rounded-xl border border-app-border bg-white p-6">
             <h3 className="mb-3 text-sm font-bold text-[#2B2C2F]">指派完成度</h3>
             {assignmentStats.totalCount > 0 ? (
               <ul className="space-y-1.5 text-sm">

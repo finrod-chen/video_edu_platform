@@ -1,6 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { TebikiUser } from "@/types/tebiki";
+import type { User } from "@/types/models";
 
 interface UserRow extends RowDataPacket {
   id: number;
@@ -11,7 +11,7 @@ interface UserRow extends RowDataPacket {
   status: "active" | "invited";
 }
 
-export async function getUser(userId: number): Promise<TebikiUser | null> {
+export async function getUser(userId: number): Promise<User | null> {
   const [rows] = await db.query(
     "SELECT id, name, email, role, avatar_color FROM users WHERE id = ?",
     [userId]
@@ -69,7 +69,7 @@ export async function upsertUserFromGoogle({
 }
 
 export interface OrgUsers {
-  members: TebikiUser[];
+  members: User[];
   memberCount: number;
 }
 

@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/DashboardShell";
-import { ManualEditorClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/manuals/ManualEditorClient";
+import { DashboardShell } from "@/components/sites/training-platform/shared/DashboardShell";
+import { ManualEditorClient } from "@/components/sites/training-platform/manuals/ManualEditorClient";
 import { getManualById, getManualSteps } from "@/lib/queries/manuals";
 import { getTagsForManual } from "@/lib/queries/tags";
 import { getFolders } from "@/lib/queries/folders";
 import { getQuizForManual } from "@/lib/queries/quizzes";
+import { listManualAttachments } from "@/lib/queries/attachments";
 import { CURRENT_ORG_ID, isAdmin, isEditorOrAbove, requireEditor } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
@@ -19,12 +20,13 @@ export default async function ManualEditPage({
 
   const currentUser = await requireEditor();
   const manualId = Number(id);
-  const [manual, steps, tags, folders, quiz] = await Promise.all([
+  const [manual, steps, tags, folders, quiz, attachments] = await Promise.all([
     getManualById(CURRENT_ORG_ID, manualId),
     getManualSteps(manualId),
     getTagsForManual(manualId),
     getFolders(CURRENT_ORG_ID),
     getQuizForManual(CURRENT_ORG_ID, manualId),
+    listManualAttachments(manualId),
   ]);
 
   if (!manual) notFound();
@@ -41,6 +43,7 @@ export default async function ManualEditPage({
         folders={folders}
         canPermanentlyDelete={canPermanentlyDelete}
         initialQuiz={quiz}
+        initialAttachments={attachments}
       />
     </DashboardShell>
   );

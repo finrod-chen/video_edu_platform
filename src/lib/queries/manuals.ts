@@ -1,6 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import type { ManualStatus, ManualStepEditData, TebikiManual, TebikiManualStep } from "@/types/tebiki";
+import type { ManualStatus, ManualStepEditData, Manual, ManualStep } from "@/types/models";
 
 export type { ManualStatus };
 
@@ -19,7 +19,7 @@ export async function getManuals(
   keyword?: string,
   order: "asc" | "desc" = "desc",
   folderId?: number | null
-): Promise<TebikiManual[]> {
+): Promise<Manual[]> {
   const params: (string | number)[] = [orgId, status];
   let keywordClause = "";
   if (keyword) {
@@ -70,7 +70,7 @@ interface ManualDetailRow extends RowDataPacket {
 export async function getManualById(
   orgId: number,
   manualId: number
-): Promise<TebikiManual | null> {
+): Promise<Manual | null> {
   const [rows] = await db.query(
     "SELECT id, org_id, title, description, status, has_been_published, folder_id, updated_at FROM manuals WHERE id = ? AND org_id = ?",
     [manualId, orgId]
@@ -150,7 +150,9 @@ interface StepRow extends RowDataPacket {
   manual_id: number;
   position: number;
   title: string;
+  media_type: "video" | "image";
   video_path: string | null;
+  image_path: string | null;
   thumbnail_path: string | null;
   duration_seconds: number | null;
   captions_vtt: string | null;
@@ -158,13 +160,15 @@ interface StepRow extends RowDataPacket {
   edit_data: ManualStepEditData | string | null;
 }
 
-function mapStep(r: StepRow): TebikiManualStep {
+function mapStep(r: StepRow): ManualStep {
   return {
     id: String(r.id),
     manualId: String(r.manual_id),
     position: r.position,
     title: r.title,
+    mediaType: r.media_type,
     videoPath: r.video_path,
+    imagePath: r.image_path,
     thumbnailPath: r.thumbnail_path,
     durationSeconds: r.duration_seconds,
     captionsVtt: r.captions_vtt,
@@ -175,9 +179,9 @@ function mapStep(r: StepRow): TebikiManualStep {
 }
 
 const STEP_SELECT =
-  "SELECT id, manual_id, position, title, video_path, thumbnail_path, duration_seconds, captions_vtt, caption_status, edit_data FROM manual_steps";
+  "SELECT id, manual_id, position, title, media_type, video_path, image_path, thumbnail_path, duration_seconds, captions_vtt, caption_status, edit_data FROM manual_steps";
 
-export async function getManualSteps(manualId: number): Promise<TebikiManualStep[]> {
+export async function getManualSteps(manualId: number): Promise<ManualStep[]> {
   const [rows] = await db.query(`${STEP_SELECT} WHERE manual_id = ? ORDER BY position ASC`, [manualId]);
   return (rows as StepRow[]).map(mapStep);
 }
@@ -185,7 +189,7 @@ export async function getManualSteps(manualId: number): Promise<TebikiManualStep
 export async function getManualStepById(
   manualId: number,
   stepId: number
-): Promise<TebikiManualStep | null> {
+): Promise<ManualStep | null> {
   const [rows] = await db.query(`${STEP_SELECT} WHERE id = ? AND manual_id = ?`, [stepId, manualId]);
   const row = (rows as StepRow[])[0];
   return row ? mapStep(row) : null;
@@ -212,9 +216,11 @@ export async function updateManualStep(
   stepId: number,
   fields: {
     title?: string;
-    videoPath?: string;
-    thumbnailPath?: string;
-    durationSeconds?: number;
+    mediaType?: "video" | "image";
+    videoPath?: string | null;
+    imagePath?: string | null;
+    thumbnailPath?: string | null;
+    durationSeconds?: number | null;
     captionsVtt?: string | null;
     captionStatus?: "none" | "pending" | "done" | "failed";
     editData?: ManualStepEditData | null;
@@ -222,7 +228,9 @@ export async function updateManualStep(
 ): Promise<void> {
   const columnMap: Record<string, string> = {
     title: "title",
+    mediaType: "media_type",
     videoPath: "video_path",
+    imagePath: "image_path",
     thumbnailPath: "thumbnail_path",
     durationSeconds: "duration_seconds",
     captionsVtt: "captions_vtt",
