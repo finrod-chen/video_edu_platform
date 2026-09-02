@@ -162,6 +162,8 @@ mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/009_step_edit_lock.sql
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/010_manual_daily_visits.sql
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/011_manual_attachments.sql
 mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/012_step_media_type.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/013_assignment_scope.sql
+mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/014_users_status_and_email_pref.sql
 ```
 
 新安裝（空資料庫）直接跑最新的 `db/schema.sql` 即可，不需要另外跑這些 migration。

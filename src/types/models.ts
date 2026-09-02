@@ -201,11 +201,6 @@ export interface VisitorDataPoint {
   watchHours: number;
 }
 
-export interface RankingEntry {
-  id: string;
-  label: string;
-  value: number;
-}
 
 export interface AcknowledgmentStats {
   acknowledgedCount: number;

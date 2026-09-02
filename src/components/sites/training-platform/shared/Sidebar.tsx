@@ -49,7 +49,7 @@ const primaryNav: NavItem[] = [
 
 const secondaryNav: NavItem[] = [
   { key: "orgSettings", label: "公司設定", href: "/orgs", icon: OrgIcon },
-  { key: "orgReports", label: "公司報告", href: "/reports/company", icon: ReportIcon },
+  { key: "orgReports", label: "進度追蹤", href: "/reports/company", icon: ReportIcon },
 ];
 
 export function Sidebar({ activeKey, role }: { activeKey: NavItemKey | null; role: string }) {

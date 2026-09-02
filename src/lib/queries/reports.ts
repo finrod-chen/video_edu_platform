@@ -5,7 +5,6 @@ import type {
   AcknowledgmentStats,
   AssignmentStats,
   QuizStats,
-  RankingEntry,
   ReportSummary,
   VisitorDataPoint,
 } from "@/types/models";
@@ -76,25 +75,6 @@ export async function getReportSummary(orgId: number): Promise<ReportSummary> {
   };
 }
 
-interface RankingRow extends RowDataPacket {
-  id: number;
-  label: string;
-  value: number;
-}
-
-export async function getUserAccessRanking(orgId: number, limit = 5): Promise<RankingEntry[]> {
-  const [rows] = await db.query(
-    `SELECT u.id, u.name AS label, COUNT(b.id) AS value
-     FROM users u
-     LEFT JOIN bookmarks b ON b.user_id = u.id
-     WHERE u.org_id = ?
-     GROUP BY u.id, u.name
-     ORDER BY value DESC
-     LIMIT ?`,
-    [orgId, limit]
-  );
-  return (rows as RankingRow[]).map((r) => ({ id: String(r.id), label: r.label, value: r.value }));
-}
 
 export async function getAcknowledgmentStats(orgId: number): Promise<AcknowledgmentStats> {
   const [[possibleRows], [completedRows]] = await Promise.all([
