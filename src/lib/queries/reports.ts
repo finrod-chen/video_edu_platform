@@ -1,5 +1,6 @@
 import type { RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
+import { manualCompletedExpr } from "@/lib/queries/completion";
 import type {
   AcknowledgmentStats,
   AssignmentStats,
@@ -76,7 +77,7 @@ export async function getUserAccessRanking(orgId: number, limit = 5): Promise<Ra
 }
 
 export async function getAcknowledgmentStats(orgId: number): Promise<AcknowledgmentStats> {
-  const [[possibleRows], [ackRows]] = await Promise.all([
+  const [[possibleRows], [completedRows]] = await Promise.all([
     db.query(
       `SELECT
          (SELECT COUNT(*) FROM manuals WHERE org_id = ? AND status = 'published') AS manual_count,
@@ -84,18 +85,18 @@ export async function getAcknowledgmentStats(orgId: number): Promise<Acknowledgm
       [orgId, orgId]
     ),
     db.query(
-      `SELECT COUNT(*) AS acknowledged_count
-       FROM manual_acknowledgments ma
-       JOIN manuals m ON m.id = ma.manual_id AND m.status = 'published'
-       JOIN users u ON u.id = ma.user_id AND u.status = 'active'
-       WHERE m.org_id = ?`,
-      [orgId]
+      `SELECT COUNT(*) AS completed_count
+       FROM manuals m
+       CROSS JOIN users u
+       WHERE m.org_id = ? AND m.status = 'published' AND u.org_id = ? AND u.status = 'active'
+         AND ${manualCompletedExpr("m.id", "u.id")}`,
+      [orgId, orgId]
     ),
   ]);
 
   const possibleRow = (possibleRows as RowDataPacket[])[0];
   const possibleCount = Number(possibleRow?.manual_count ?? 0) * Number(possibleRow?.user_count ?? 0);
-  const acknowledgedCount = Number((ackRows as RowDataPacket[])[0]?.acknowledged_count ?? 0);
+  const acknowledgedCount = Number((completedRows as RowDataPacket[])[0]?.completed_count ?? 0);
 
   return {
     acknowledgedCount,
@@ -129,14 +130,14 @@ export async function getQuizStats(orgId: number): Promise<QuizStats> {
 }
 
 export async function getAssignmentStats(orgId: number): Promise<AssignmentStats> {
+  const completedExpr = manualCompletedExpr("a.manual_id", "at.user_id");
   const [rows] = await db.query(
     `SELECT
        COUNT(*) AS total_count,
-       SUM(CASE WHEN ack.user_id IS NOT NULL THEN 1 ELSE 0 END) AS completed_count,
-       SUM(CASE WHEN ack.user_id IS NULL AND a.due_date IS NOT NULL AND a.due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue_count
+       SUM(CASE WHEN ${completedExpr} THEN 1 ELSE 0 END) AS completed_count,
+       SUM(CASE WHEN NOT ${completedExpr} AND a.due_date IS NOT NULL AND a.due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue_count
      FROM assignment_targets at
-     JOIN assignments a ON a.id = at.assignment_id AND a.org_id = ?
-     LEFT JOIN manual_acknowledgments ack ON ack.manual_id = a.manual_id AND ack.user_id = at.user_id`,
+     JOIN assignments a ON a.id = at.assignment_id AND a.org_id = ?`,
     [orgId]
   );
   const row = (rows as RowDataPacket[])[0];

@@ -50,10 +50,9 @@ INSERT INTO bookmarks (user_id, item_type, item_id) VALUES
 INSERT INTO tasks (user_id, title, due_date, done) VALUES
   (1, '完成本月安全規範複訓', DATE_ADD(CURDATE(), INTERVAL 7 DAY), FALSE);
 
--- 已瞭解示例：員工陳小強已確認完成「新進人員教育訓練 SOP」。
-INSERT INTO manual_acknowledgments (manual_id, user_id) VALUES
-  (1, 3)
-ON DUPLICATE KEY UPDATE acknowledged_at = acknowledged_at;
+-- 已瞭解走步驟層級（manual_step_acknowledgments），這裡沒有實際 seed 任何
+-- manual_steps 資料列可以參照（步驟都是透過上傳流程動態建立），所以不放
+-- 已瞭解的示例資料。
 
 -- 指派示例：編輯林小華指派「機台保養標準流程」給員工陳小強。
 INSERT INTO assignments (id, org_id, manual_id, assigned_by, due_date, note) VALUES

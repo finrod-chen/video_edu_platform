@@ -1,5 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
+import { manualCompletedExpr } from "@/lib/queries/completion";
 import type { TebikiAssignment, TebikiMyAssignment } from "@/types/tebiki";
 
 interface AssignmentRow extends RowDataPacket {
@@ -19,12 +20,12 @@ export async function getAssignmentsForOrg(orgId: number): Promise<TebikiAssignm
     `SELECT a.id, a.manual_id, m.title AS manual_title, u.name AS assigned_by_name,
             a.due_date, a.note, a.created_at,
             COUNT(at.user_id) AS target_count,
-            SUM(CASE WHEN ack.user_id IS NOT NULL THEN 1 ELSE 0 END) AS completed_count
+            SUM(CASE WHEN at.user_id IS NOT NULL AND ${manualCompletedExpr("a.manual_id", "at.user_id")}
+                     THEN 1 ELSE 0 END) AS completed_count
      FROM assignments a
      JOIN manuals m ON m.id = a.manual_id
      JOIN users u ON u.id = a.assigned_by
      LEFT JOIN assignment_targets at ON at.assignment_id = a.id
-     LEFT JOIN manual_acknowledgments ack ON ack.manual_id = a.manual_id AND ack.user_id = at.user_id
      WHERE a.org_id = ?
      GROUP BY a.id, a.manual_id, m.title, u.name, a.due_date, a.note, a.created_at
      ORDER BY a.created_at DESC`,
@@ -54,11 +55,10 @@ interface MyAssignmentRow extends RowDataPacket {
 export async function getAssignmentsForUser(userId: number): Promise<TebikiMyAssignment[]> {
   const [rows] = await db.query(
     `SELECT a.id, a.manual_id, m.title AS manual_title, a.due_date,
-            CASE WHEN ack.user_id IS NOT NULL THEN 1 ELSE 0 END AS completed
+            ${manualCompletedExpr("a.manual_id", "at.user_id")} AS completed
      FROM assignment_targets at
      JOIN assignments a ON a.id = at.assignment_id
      JOIN manuals m ON m.id = a.manual_id
-     LEFT JOIN manual_acknowledgments ack ON ack.manual_id = a.manual_id AND ack.user_id = at.user_id
      WHERE at.user_id = ?
      ORDER BY (a.due_date IS NULL) ASC, a.due_date ASC, a.created_at DESC`,
     [userId]

@@ -25,7 +25,7 @@ export function CourseDetailClient({
   availableManuals,
   canManage,
   canPermanentlyDelete,
-  acknowledgedManualIds,
+  completedManualIds,
   quiz,
   latestAttempt,
 }: {
@@ -34,11 +34,11 @@ export function CourseDetailClient({
   availableManuals: TebikiManual[];
   canManage: boolean;
   canPermanentlyDelete: boolean;
-  acknowledgedManualIds: string[];
+  completedManualIds: string[];
   quiz: TebikiQuiz | null;
   latestAttempt: TebikiQuizAttempt | null;
 }) {
-  const acknowledgedSet = new Set(acknowledgedManualIds);
+  const completedSet = new Set(completedManualIds);
   const router = useRouter();
   const [status, setStatus] = useState<ManualStatus>(course.status ?? "draft");
   const [manuals, setManuals] = useState(initialManuals);
@@ -172,7 +172,7 @@ export function CourseDetailClient({
       {!canManage && initialManuals.length > 0 && (
         <div className="rounded-xl border border-tebiki-border bg-white p-4">
           <p className="text-sm font-medium text-[#2B2C2F]">
-            已完成 {acknowledgedSet.size}/{initialManuals.length} 手冊
+            已完成 {completedSet.size}/{initialManuals.length} 手冊
           </p>
         </div>
       )}
@@ -251,8 +251,8 @@ export function CourseDetailClient({
                 <Link href={`/manuals/${m.manualId}`} className="flex-1 text-sm text-brand hover:underline">
                   {m.title}
                 </Link>
-                {!canManage && acknowledgedSet.has(m.manualId) && (
-                  <span className="text-xs font-medium text-brand">✓ 已瞭解</span>
+                {!canManage && completedSet.has(m.manualId) && (
+                  <span className="text-xs font-medium text-brand">✓ 已完成</span>
                 )}
                 {canManage && (
                   <button

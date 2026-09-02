@@ -154,7 +154,9 @@ CREATE TABLE IF NOT EXISTS manual_view_daily (
   UNIQUE KEY uniq_org_date (org_id, visit_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 員工點擊確認已完成手冊學習。
+-- 已停用：手冊層級的「已瞭解」（migration 004）。改用下面的
+-- manual_step_acknowledgments（migration 007，步驟層級）。留著不刪除，
+-- 沒有任何程式碼再讀寫這張表。
 CREATE TABLE IF NOT EXISTS manual_acknowledgments (
   id INT PRIMARY KEY AUTO_INCREMENT,
   manual_id INT NOT NULL,
@@ -162,6 +164,18 @@ CREATE TABLE IF NOT EXISTS manual_acknowledgments (
   acknowledged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uniq_ack (manual_id, user_id),
   FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 員工逐步驟確認已瞭解該步驟內容。手冊的「完成」判定看最後一個步驟
+-- （position 最大）是否已被確認，或改看是否通過該手冊的測驗（如果有）。
+CREATE TABLE IF NOT EXISTS manual_step_acknowledgments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  manual_step_id INT NOT NULL,
+  user_id INT NOT NULL,
+  acknowledged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_step_ack (manual_step_id, user_id),
+  FOREIGN KEY (manual_step_id) REFERENCES manual_steps(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

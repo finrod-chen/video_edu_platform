@@ -8,8 +8,14 @@
 
 -- 1. Rebuild courses/course_manuals without their own folder structure,
 --    with a status lifecycle matching manuals (published/draft/trashed).
+--    FK checks disabled around the drop: if migration 005 (quizzes) was ever
+--    run before this migration completed, quizzes.course_id already
+--    references courses(id) and the plain DROP TABLE would fail with
+--    "Cannot drop table ... foreign key constraint fails".
+SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS course_manuals;
 DROP TABLE IF EXISTS courses;
+SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE courses (
   id INT PRIMARY KEY AUTO_INCREMENT,

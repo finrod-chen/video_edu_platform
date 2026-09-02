@@ -15,7 +15,6 @@ import {
   PlusIcon,
   QuizIcon,
   ReportIcon,
-  SupportIcon,
   TagIcon,
   SiteLogo,
 } from "./icons";
@@ -149,15 +148,6 @@ export function Sidebar({ activeKey, role }: { activeKey: NavItemKey | null; rol
               </li>
             );
           })}
-          <li>
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-[#2B2C2F] transition-colors hover:bg-tebiki-bg"
-            >
-              <SupportIcon className="h-[18px] w-[18px]" />
-              支援
-            </button>
-          </li>
         </ul>
       </div>
     </aside>

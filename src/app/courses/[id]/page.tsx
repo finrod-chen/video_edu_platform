@@ -3,7 +3,7 @@ import { DashboardShell } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/sha
 import { CourseDetailClient } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/courses/CourseDetailClient";
 import { getCourseById, getCourseManuals } from "@/lib/queries/courses";
 import { getManuals } from "@/lib/queries/manuals";
-import { getAcknowledgedManualIds } from "@/lib/queries/acknowledgments";
+import { getCompletedManualIds } from "@/lib/queries/completion";
 import { getLatestAttempt, getPublishedQuizForCourse } from "@/lib/queries/quizzes";
 import { CURRENT_ORG_ID, getCurrentUser, isAdmin, isEditorOrAbove } from "@/lib/current-viewer";
 
@@ -36,7 +36,7 @@ export default async function CourseDetailPage({
   const canManage = isEditorOrAbove(currentUser.role);
   const canPermanentlyDelete =
     isAdmin(currentUser.role) || (canManage && !course.hasBeenPublished);
-  const acknowledgedManualIds = await getAcknowledgedManualIds(
+  const completedManualIds = await getCompletedManualIds(
     currentUser.id,
     manuals.map((m) => Number(m.manualId))
   );
@@ -52,7 +52,7 @@ export default async function CourseDetailPage({
         availableManuals={availableManuals}
         canManage={canManage}
         canPermanentlyDelete={canPermanentlyDelete}
-        acknowledgedManualIds={[...acknowledgedManualIds]}
+        completedManualIds={[...completedManualIds]}
         quiz={quiz}
         latestAttempt={latestAttempt}
       />
