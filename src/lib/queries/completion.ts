@@ -33,9 +33,9 @@ export function manualCompletedExpr(manualIdCol: string, userIdCol: string): str
       )
       ELSE EXISTS (
         SELECT 1 FROM manual_steps ms
-        JOIN manual_step_acknowledgments msa
-          ON msa.manual_step_id = ms.id AND msa.user_id = ${userIdCol}
+        JOIN manual_step_acknowledgments msa ON msa.manual_step_id = ms.id
         WHERE ms.manual_id = ${manualIdCol}
+          AND msa.user_id = ${userIdCol}
           AND ms.position = (SELECT MAX(position) FROM manual_steps WHERE manual_id = ${manualIdCol})
       )
     END
