@@ -58,6 +58,16 @@ export async function getPublishedQuizForManual(orgId: number, manualId: number)
   return row ? mapQuiz(row) : null;
 }
 
+/** Unlike getPublishedQuizForManual, this also returns draft quizzes so the manual editor can show/link to a quiz that's still being authored. Trashed quizzes count as "no quiz bound". */
+export async function getQuizForManual(orgId: number, manualId: number): Promise<TebikiQuiz | null> {
+  const [rows] = await db.query(
+    `${QUIZ_SELECT} WHERE org_id = ? AND scope = 'manual' AND manual_id = ? AND status != 'trashed' LIMIT 1`,
+    [orgId, manualId]
+  );
+  const row = (rows as QuizRow[])[0];
+  return row ? mapQuiz(row) : null;
+}
+
 export async function getPublishedQuizForCourse(orgId: number, courseId: number): Promise<TebikiQuiz | null> {
   const [rows] = await db.query(
     `${QUIZ_SELECT} WHERE org_id = ? AND scope = 'course' AND course_id = ? AND status = 'published' LIMIT 1`,

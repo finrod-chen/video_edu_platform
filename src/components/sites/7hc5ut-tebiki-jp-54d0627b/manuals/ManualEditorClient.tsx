@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StepCard } from "./StepCard";
+import { ManualQuizLink } from "./ManualQuizLink";
 import { PlusIcon } from "@/components/sites/7hc5ut-tebiki-jp-54d0627b/shared/icons";
 import type {
   ManualStatus,
@@ -11,6 +12,7 @@ import type {
   TebikiFolder,
   TebikiManual,
   TebikiManualStep,
+  TebikiQuiz,
   TebikiTag,
 } from "@/types/tebiki";
 
@@ -26,12 +28,14 @@ export function ManualEditorClient({
   initialTags,
   folders,
   canPermanentlyDelete,
+  initialQuiz,
 }: {
   manual: TebikiManual;
   initialSteps: TebikiManualStep[];
   initialTags: TebikiTag[];
   folders: TebikiFolder[];
   canPermanentlyDelete: boolean;
+  initialQuiz: TebikiQuiz | null;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(manual.title);
@@ -306,6 +310,8 @@ export function ManualEditorClient({
           </button>
         </div>
       </div>
+
+      <ManualQuizLink manualId={manual.id} manualTitle={title} quiz={initialQuiz} />
 
       <div>
         <div className="mb-3 flex items-center justify-between">
