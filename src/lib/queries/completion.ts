@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
 import { isLastStepAcknowledged } from "@/lib/queries/acknowledgments";
+import { getCourseManuals } from "@/lib/queries/courses";
 
 /**
  * SQL fragment for "is this manual complete for this user":
@@ -69,4 +70,19 @@ export async function getCompletedManualIds(userId: number, manualIds: number[])
     }))
   );
   return new Set(completed.filter((c) => c.complete).map((c) => String(c.manualId)));
+}
+
+/**
+ * A course is "complete" for a user once every manual in it is complete.
+ * Course-scope assignments are expected to be far less numerous than
+ * manual-scope ones, so this per-manual-completion loop (rather than a
+ * single SQL aggregate like manualCompletedExpr) is fine performance-wise.
+ */
+export async function isCourseComplete(courseId: number, userId: number): Promise<boolean> {
+  const courseManuals = await getCourseManuals(courseId);
+  if (courseManuals.length === 0) return false;
+  const results = await Promise.all(
+    courseManuals.map((cm) => isManualComplete(Number(cm.manualId), userId))
+  );
+  return results.every(Boolean);
 }

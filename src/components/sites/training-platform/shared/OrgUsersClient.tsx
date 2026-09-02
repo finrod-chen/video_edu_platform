@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { SearchIcon } from "./icons";
-import type { User } from "@/types/models";
+import type { OrgUserRow } from "@/lib/queries/users";
 
 const ROLE_OPTIONS = ["管理員", "編輯", "員工"];
 
@@ -11,7 +12,7 @@ export function OrgUsersClient({
   memberCount,
   currentUserId,
 }: {
-  members: User[];
+  members: OrgUserRow[];
   memberCount: number;
   currentUserId: string;
 }) {
@@ -33,6 +34,30 @@ export function OrgUsersClient({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error ?? "更新失敗");
+      }
+    } catch (err) {
+      setUsers(previous);
+      setError(err instanceof Error ? err.message : "更新失敗");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  async function handleStatusToggle(userId: string, nextStatus: "active" | "disabled") {
+    const previous = users;
+    setError(null);
+    setPendingId(userId);
+    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: nextStatus } : u)));
+
+    try {
+      const res = await fetch(`/api/org/users/${userId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -81,42 +106,63 @@ export function OrgUsersClient({
             <th className="py-3 font-medium">使用者名稱</th>
             <th className="py-3 font-medium">Email</th>
             <th className="py-3 font-medium">角色</th>
+            <th className="py-3 font-medium">狀態</th>
           </tr>
         </thead>
         <tbody>
-          {filtered.map((m) => (
-            <tr key={m.id} className="border-t border-app-border">
-              <td className="py-3">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
-                    style={{ backgroundColor: m.avatarColor }}
+          {filtered.map((m) => {
+            const disabled = m.status === "disabled";
+            return (
+              <tr key={m.id} className={cn("border-t border-app-border", disabled && "opacity-50")}>
+                <td className="py-3">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
+                      style={{ backgroundColor: m.avatarColor }}
+                    >
+                      {m.avatarInitial}
+                    </span>
+                    <p className="text-[#2B2C2F]">{m.name}</p>
+                  </div>
+                </td>
+                <td className="py-3 text-[#8B93A1]">{m.email}</td>
+                <td className="py-3">
+                  <select
+                    value={m.role}
+                    disabled={pendingId === m.id || disabled}
+                    onChange={(e) => handleRoleChange(m.id, e.target.value)}
+                    className="rounded-lg border border-app-border px-3 py-1.5 text-sm text-[#2B2C2F] disabled:opacity-50"
                   >
-                    {m.avatarInitial}
-                  </span>
-                  <p className="text-[#2B2C2F]">{m.name}</p>
-                </div>
-              </td>
-              <td className="py-3 text-[#8B93A1]">{m.email}</td>
-              <td className="py-3">
-                <select
-                  value={m.role}
-                  disabled={pendingId === m.id}
-                  onChange={(e) => handleRoleChange(m.id, e.target.value)}
-                  className="rounded-lg border border-app-border px-3 py-1.5 text-sm text-[#2B2C2F] disabled:opacity-50"
-                >
-                  {ROLE_OPTIONS.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-                {m.id === currentUserId && (
-                  <span className="ml-2 text-xs text-[#8B93A1]">（我）</span>
-                )}
-              </td>
-            </tr>
-          ))}
+                    {ROLE_OPTIONS.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                  {m.id === currentUserId && (
+                    <span className="ml-2 text-xs text-[#8B93A1]">（我）</span>
+                  )}
+                </td>
+                <td className="py-3">
+                  {m.id === currentUserId ? (
+                    <span className="text-xs text-[#8B93A1]">—</span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={pendingId === m.id}
+                      onClick={() => handleStatusToggle(m.id, disabled ? "active" : "disabled")}
+                      className={cn(
+                        "text-xs hover:underline disabled:opacity-50",
+                        disabled ? "text-brand" : "text-red-600"
+                      )}
+                    >
+                      {disabled ? "恢復" : "停用"}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </>

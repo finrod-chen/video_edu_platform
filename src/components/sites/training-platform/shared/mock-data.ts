@@ -10,6 +10,7 @@ export const mockUser: User = {
   role: "行政",
   avatarInitial: "王",
   avatarColor: "#64748B",
+  emailNotificationsEnabled: true,
 };
 
 // This is the real, authorized organization this system is built for
@@ -19,6 +20,4 @@ export const mockUser: User = {
 export const mockOrg: Org = {
   name: "喜躍生醫股份有限公司",
   planType: "內部訓練系統",
-  videoQuality: "始終保持高品質",
-  translationLanguage: "繁體中文",
 };

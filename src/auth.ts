@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { upsertUserFromGoogle } from "@/lib/queries/users";
+import { getUserStatusByEmail, upsertUserFromGoogle } from "@/lib/queries/users";
 import { CURRENT_ORG_ID } from "@/lib/current-viewer";
 
 export const ALLOWED_GOOGLE_DOMAIN = "xiyuebiomed.com.tw";
@@ -31,6 +31,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (hd !== ALLOWED_GOOGLE_DOMAIN && domain !== ALLOWED_GOOGLE_DOMAIN) {
         return false;
       }
+      // Blocks a disabled (offboarded) employee's Google account from
+      // establishing a new session. Existing already-signed-in sessions
+      // aren't force-revoked (no session blocklist) -- they age out
+      // naturally with the JWT's normal expiry.
+      const status = await getUserStatusByEmail(profile.email);
+      if (status === "disabled") return false;
       return true;
     },
     async jwt({ token, profile }) {

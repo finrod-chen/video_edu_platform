@@ -5,21 +5,35 @@ import { cn } from "@/lib/utils";
 import type { User } from "@/types/models";
 
 const tabs = [
-  { key: "profile", label: "輪廓" },
+  { key: "profile", label: "個人資料" },
   { key: "email", label: "電子郵件通知" },
-  { key: "password", label: "密碼" },
 ] as const;
 
 export function MyPageClient({ user }: { user: User }) {
   const [tab, setTab] = useState<(typeof tabs)[number]["key"]>("profile");
+  const [enabled, setEnabled] = useState(user.emailNotificationsEnabled);
+  const [saving, setSaving] = useState(false);
 
   const fields = [
     { label: "姓名", value: user.name },
     { label: "電子郵件", value: user.email },
     { label: "使用者角色", value: user.role },
-    { label: "顯示語言", value: "繁體中文" },
-    { label: "視訊品質", value: "始終保持高品質" },
   ];
+
+  async function handleToggle() {
+    const next = !enabled;
+    setEnabled(next);
+    setSaving(true);
+    try {
+      await fetch("/api/users/me/email-notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: next }),
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="rounded-xl border border-app-border bg-white">
@@ -49,23 +63,42 @@ export function MyPageClient({ user }: { user: User }) {
             >
               {user.avatarInitial}
             </div>
-            <div>
-              <div className="divide-y divide-app-border">
-                {fields.map((f) => (
-                  <div key={f.label} className="py-4 first:pt-0">
-                    <p className="mb-1 text-sm font-bold text-[#2B2C2F]">{f.label}</p>
-                    <p className="text-sm text-[#5B6270]">{f.value}</p>
-                  </div>
-                ))}
-              </div>
-              <button className="mt-8 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark">
-                編輯個人資料
-              </button>
+            <div className="divide-y divide-app-border">
+              {fields.map((f) => (
+                <div key={f.label} className="py-4 first:pt-0">
+                  <p className="mb-1 text-sm font-bold text-[#2B2C2F]">{f.label}</p>
+                  <p className="text-sm text-[#5B6270]">{f.value}</p>
+                </div>
+              ))}
             </div>
           </div>
         )}
-        {tab === "email" && <p className="text-sm text-[#8B93A1]">電子郵件通知設定。</p>}
-        {tab === "password" && <p className="text-sm text-[#8B93A1]">變更您的密碼。</p>}
+        {tab === "email" && (
+          <div className="flex items-center justify-between max-w-md">
+            <div>
+              <p className="text-sm font-bold text-[#2B2C2F]">指派到期提醒</p>
+              <p className="mt-1 text-sm text-[#8B93A1]">有新的手冊/課程指派給您時，寄送 email 通知。</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={enabled}
+              disabled={saving}
+              onClick={handleToggle}
+              className={cn(
+                "relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50",
+                enabled ? "bg-brand" : "bg-[#D6D9E0]"
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform",
+                  enabled ? "translate-x-[22px]" : "translate-x-0.5"
+                )}
+              />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

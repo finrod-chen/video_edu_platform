@@ -5,13 +5,22 @@ export interface User {
   role: string;
   avatarInitial: string;
   avatarColor: string;
+  emailNotificationsEnabled: boolean;
+}
+
+/** Lighter-weight shape for target pickers (assignments, group membership) -- no need for the viewer-only email-pref field. */
+export interface PickableUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarInitial: string;
+  avatarColor: string;
 }
 
 export interface Org {
   name: string;
   planType: string;
-  videoQuality: string;
-  translationLanguage: string;
 }
 
 export type ManualStatus = "published" | "draft" | "trashed";
@@ -91,10 +100,15 @@ export interface CourseManual {
   position: number;
 }
 
+export type AssignmentScope = "manual" | "course";
+
 export interface Assignment {
   id: string;
-  manualId: string;
-  manualTitle: string;
+  scope: AssignmentScope;
+  manualId: string | null;
+  manualTitle: string | null;
+  courseId: string | null;
+  courseTitle: string | null;
   assignedByName: string;
   dueDate: string | null;
   note: string | null;
@@ -105,8 +119,11 @@ export interface Assignment {
 
 export interface MyAssignment {
   id: string;
-  manualId: string;
-  manualTitle: string;
+  scope: AssignmentScope;
+  manualId: string | null;
+  manualTitle: string | null;
+  courseId: string | null;
+  courseTitle: string | null;
   dueDate: string | null;
   completed: boolean;
 }
@@ -165,6 +182,10 @@ export interface UserGroup {
   id: string;
   name: string;
   description: string;
+}
+
+export interface UserGroupWithMembers extends UserGroup {
+  memberIds: string[];
 }
 
 export interface ReportSummary {

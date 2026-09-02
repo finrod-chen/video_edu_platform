@@ -1,18 +1,21 @@
 import { OrgSettingsShell } from "@/components/sites/training-platform/shared/OrgSettingsShell";
+import { BatchCaptionsButton } from "@/components/sites/training-platform/shared/BatchCaptionsButton";
 import { getOrg } from "@/lib/queries/org";
+import { getStepsNeedingCaptions } from "@/lib/queries/manuals";
 import { CURRENT_ORG_ID, requireAdmin } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function OrgInfoPage() {
   await requireAdmin();
-  const org = await getOrg(CURRENT_ORG_ID);
+  const [org, captionBacklog] = await Promise.all([
+    getOrg(CURRENT_ORG_ID),
+    getStepsNeedingCaptions(CURRENT_ORG_ID),
+  ]);
 
   const fields = [
     { label: "公司/部門名稱", value: org?.name ?? "—" },
     { label: "計劃類型", value: org?.planType ?? "—" },
-    { label: "視訊品質", value: org?.videoQuality ?? "—" },
-    { label: "翻譯語言", value: org?.translationLanguage ?? "—" },
     { label: "技術詞典", value: "CSV 尚未上傳。" },
   ];
 
@@ -26,9 +29,13 @@ export default async function OrgInfoPage() {
           </div>
         ))}
       </div>
-      <button className="mt-8 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark">
-        編輯公司資訊
-      </button>
+
+      {captionBacklog.length > 0 && (
+        <div className="mt-8 border-t border-app-border pt-6">
+          <p className="mb-2 text-sm font-bold text-[#2B2C2F]">字幕維護</p>
+          <BatchCaptionsButton pendingCount={captionBacklog.length} />
+        </div>
+      )}
     </OrgSettingsShell>
   );
 }

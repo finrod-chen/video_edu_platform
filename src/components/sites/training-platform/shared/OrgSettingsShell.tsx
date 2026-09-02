@@ -5,7 +5,6 @@ const tabs = [
   { label: "公司", href: "/orgs" },
   { label: "使用者管理", href: "/org/users" },
   { label: "使用者群組", href: "/groups" },
-  { label: "下載", href: "/exports" },
 ];
 
 export function OrgSettingsShell({

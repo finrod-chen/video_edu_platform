@@ -20,7 +20,8 @@ function getTransporter() {
 
 export interface AssignmentEmailParams {
   to: string;
-  manualTitle: string;
+  scope: "manual" | "course";
+  title: string;
   dueDate: string | null;
   assignedByName: string;
   note: string | null;
@@ -33,20 +34,22 @@ export interface AssignmentEmailParams {
  */
 export async function sendAssignmentEmail({
   to,
-  manualTitle,
+  scope,
+  title,
   dueDate,
   assignedByName,
   note,
 }: AssignmentEmailParams): Promise<void> {
   const baseUrl = process.env.AUTH_URL ?? "";
-  const link = `${baseUrl}/manuals`;
+  const link = `${baseUrl}${scope === "course" ? "/courses" : "/manuals"}`;
+  const itemLabel = scope === "course" ? "課程" : "手冊";
   const dueLine = dueDate ? `期限：${dueDate}` : "期限：無";
   const noteLine = note ? `\n備註：${note}` : "";
 
   await getTransporter().sendMail({
     from: process.env.GMAIL_SMTP_FROM || process.env.GMAIL_SMTP_USER,
     to,
-    subject: `[喜躍生醫影音訓練系統] 新指派：${manualTitle}`,
-    text: `${assignedByName} 指派您研讀手冊「${manualTitle}」。\n${dueLine}${noteLine}\n\n請至系統完成學習：${link}`,
+    subject: `[喜躍生醫影音訓練系統] 新指派：${title}`,
+    text: `${assignedByName} 指派您研讀${itemLabel}「${title}」。\n${dueLine}${noteLine}\n\n請至系統完成學習：${link}`,
   });
 }

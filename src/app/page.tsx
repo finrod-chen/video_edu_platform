@@ -43,19 +43,22 @@ export default async function HomePage() {
       {myAssignments.length > 0 && (
         <section className="mt-4 rounded-xl border border-app-border bg-white p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#2B2C2F]">指派給我的手冊</h2>
+            <h2 className="text-base font-bold text-[#2B2C2F]">指派給我的手冊／課程</h2>
             <span className="text-xs text-[#8B93A1]">
               待完成 {pendingAssignments.length} / 共 {myAssignments.length}
             </span>
           </div>
           {pendingAssignments.length === 0 ? (
-            <p className="mt-4 text-sm text-[#8B93A1]">所有指派的手冊都已完成，做得好！</p>
+            <p className="mt-4 text-sm text-[#8B93A1]">所有指派都已完成，做得好！</p>
           ) : (
             <ul className="mt-4 divide-y divide-app-border">
               {pendingAssignments.map((a) => (
                 <li key={a.id} className="flex items-center justify-between py-2.5 text-sm">
-                  <Link href={`/manuals/${a.manualId}`} className="text-brand hover:underline">
-                    {a.manualTitle}
+                  <Link
+                    href={a.scope === "course" ? `/courses/${a.courseId}` : `/manuals/${a.manualId}`}
+                    className="text-brand hover:underline"
+                  >
+                    {a.scope === "course" ? a.courseTitle : a.manualTitle}
                   </Link>
                   <span className="text-xs text-[#8B93A1]">
                     {a.dueDate ? `期限 ${a.dueDate}` : "無期限"}

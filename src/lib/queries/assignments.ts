@@ -1,9 +1,9 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "@/lib/db";
-import { manualCompletedExpr } from "@/lib/queries/completion";
-import type { Assignment, MyAssignment } from "@/types/models";
+import { manualCompletedExpr, isCourseComplete } from "@/lib/queries/completion";
+import type { Assignment, AssignmentScope, MyAssignment } from "@/types/models";
 
-interface AssignmentRow extends RowDataPacket {
+interface ManualAssignmentRow extends RowDataPacket {
   id: number;
   manual_id: number;
   manual_title: string;
@@ -15,8 +15,18 @@ interface AssignmentRow extends RowDataPacket {
   completed_count: number;
 }
 
+interface CourseAssignmentRow extends RowDataPacket {
+  id: number;
+  course_id: number;
+  course_title: string;
+  assigned_by_name: string;
+  due_date: string | null;
+  note: string | null;
+  created_at: string;
+}
+
 export async function getAssignmentsForOrg(orgId: number): Promise<Assignment[]> {
-  const [rows] = await db.query(
+  const [manualRows] = await db.query(
     `SELECT a.id, a.manual_id, m.title AS manual_title, u.name AS assigned_by_name,
             a.due_date, a.note, a.created_at,
             COUNT(at.user_id) AS target_count,
@@ -26,15 +36,18 @@ export async function getAssignmentsForOrg(orgId: number): Promise<Assignment[]>
      JOIN manuals m ON m.id = a.manual_id
      JOIN users u ON u.id = a.assigned_by
      LEFT JOIN assignment_targets at ON at.assignment_id = a.id
-     WHERE a.org_id = ?
+     WHERE a.org_id = ? AND a.scope = 'manual'
      GROUP BY a.id, a.manual_id, m.title, u.name, a.due_date, a.note, a.created_at
      ORDER BY a.created_at DESC`,
     [orgId]
   );
-  return (rows as AssignmentRow[]).map((r) => ({
+  const manualAssignments: Assignment[] = (manualRows as ManualAssignmentRow[]).map((r) => ({
     id: String(r.id),
+    scope: "manual",
     manualId: String(r.manual_id),
     manualTitle: r.manual_title,
+    courseId: null,
+    courseTitle: null,
     assignedByName: r.assigned_by_name,
     dueDate: r.due_date,
     note: r.note,
@@ -42,9 +55,50 @@ export async function getAssignmentsForOrg(orgId: number): Promise<Assignment[]>
     targetCount: Number(r.target_count),
     completedCount: Number(r.completed_count),
   }));
+
+  const [courseRows] = await db.query(
+    `SELECT a.id, a.course_id, c.title AS course_title, u.name AS assigned_by_name,
+            a.due_date, a.note, a.created_at
+     FROM assignments a
+     JOIN courses c ON c.id = a.course_id
+     JOIN users u ON u.id = a.assigned_by
+     WHERE a.org_id = ? AND a.scope = 'course'
+     ORDER BY a.created_at DESC`,
+    [orgId]
+  );
+  const courseAssignments: Assignment[] = await Promise.all(
+    (courseRows as CourseAssignmentRow[]).map(async (r) => {
+      const [targetRows] = await db.query(
+        "SELECT user_id FROM assignment_targets WHERE assignment_id = ?",
+        [r.id]
+      );
+      const targetUserIds = (targetRows as RowDataPacket[]).map((t) => t.user_id as number);
+      const completions = await Promise.all(
+        targetUserIds.map((uid) => isCourseComplete(r.course_id, uid))
+      );
+      return {
+        id: String(r.id),
+        scope: "course" as const,
+        manualId: null,
+        manualTitle: null,
+        courseId: String(r.course_id),
+        courseTitle: r.course_title,
+        assignedByName: r.assigned_by_name,
+        dueDate: r.due_date,
+        note: r.note,
+        createdAt: r.created_at,
+        targetCount: targetUserIds.length,
+        completedCount: completions.filter(Boolean).length,
+      };
+    })
+  );
+
+  return [...manualAssignments, ...courseAssignments].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }
 
-interface MyAssignmentRow extends RowDataPacket {
+interface MyManualAssignmentRow extends RowDataPacket {
   id: number;
   manual_id: number;
   manual_title: string;
@@ -52,37 +106,71 @@ interface MyAssignmentRow extends RowDataPacket {
   completed: number;
 }
 
+interface MyCourseAssignmentRow extends RowDataPacket {
+  id: number;
+  course_id: number;
+  course_title: string;
+  due_date: string | null;
+}
+
 export async function getAssignmentsForUser(userId: number): Promise<MyAssignment[]> {
-  const [rows] = await db.query(
+  const [manualRows] = await db.query(
     `SELECT a.id, a.manual_id, m.title AS manual_title, a.due_date,
             ${manualCompletedExpr("a.manual_id", "at.user_id")} AS completed
      FROM assignment_targets at
-     JOIN assignments a ON a.id = at.assignment_id
+     JOIN assignments a ON a.id = at.assignment_id AND a.scope = 'manual'
      JOIN manuals m ON m.id = a.manual_id
      WHERE at.user_id = ?
      ORDER BY (a.due_date IS NULL) ASC, a.due_date ASC, a.created_at DESC`,
     [userId]
   );
-  return (rows as MyAssignmentRow[]).map((r) => ({
+  const manualAssignments: MyAssignment[] = (manualRows as MyManualAssignmentRow[]).map((r) => ({
     id: String(r.id),
+    scope: "manual",
     manualId: String(r.manual_id),
     manualTitle: r.manual_title,
+    courseId: null,
+    courseTitle: null,
     dueDate: r.due_date,
     completed: Boolean(r.completed),
   }));
+
+  const [courseRows] = await db.query(
+    `SELECT a.id, a.course_id, c.title AS course_title, a.due_date
+     FROM assignment_targets at
+     JOIN assignments a ON a.id = at.assignment_id AND a.scope = 'course'
+     JOIN courses c ON c.id = a.course_id
+     WHERE at.user_id = ?
+     ORDER BY (a.due_date IS NULL) ASC, a.due_date ASC, a.created_at DESC`,
+    [userId]
+  );
+  const courseAssignments: MyAssignment[] = await Promise.all(
+    (courseRows as MyCourseAssignmentRow[]).map(async (r) => ({
+      id: String(r.id),
+      scope: "course" as const,
+      manualId: null,
+      manualTitle: null,
+      courseId: String(r.course_id),
+      courseTitle: r.course_title,
+      dueDate: r.due_date,
+      completed: await isCourseComplete(r.course_id, userId),
+    }))
+  );
+
+  return [...manualAssignments, ...courseAssignments];
 }
 
 export async function createAssignment(
   orgId: number,
-  manualId: number,
+  target: { scope: AssignmentScope; manualId: number | null; courseId: number | null },
   assignedBy: number,
   userIds: number[],
   dueDate: string | null,
   note: string | null
 ): Promise<number> {
   const [result] = await db.execute(
-    "INSERT INTO assignments (org_id, manual_id, assigned_by, due_date, note) VALUES (?, ?, ?, ?, ?)",
-    [orgId, manualId, assignedBy, dueDate, note]
+    "INSERT INTO assignments (org_id, scope, manual_id, course_id, assigned_by, due_date, note) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [orgId, target.scope, target.manualId, target.courseId, assignedBy, dueDate, note]
   );
   const assignmentId = (result as ResultSetHeader).insertId;
 
@@ -109,13 +197,14 @@ interface AssignmentTargetEmailRow extends RowDataPacket {
   id: number;
   email: string;
   name: string;
+  email_notifications_enabled: number;
 }
 
 export async function getAssignmentTargetContacts(
   assignmentId: number
-): Promise<{ userId: number; email: string; name: string }[]> {
+): Promise<{ userId: number; email: string; name: string; emailNotificationsEnabled: boolean }[]> {
   const [rows] = await db.query(
-    `SELECT u.id, u.email, u.name
+    `SELECT u.id, u.email, u.name, u.email_notifications_enabled
      FROM assignment_targets at
      JOIN users u ON u.id = at.user_id
      WHERE at.assignment_id = ?`,
@@ -125,5 +214,6 @@ export async function getAssignmentTargetContacts(
     userId: r.id,
     email: r.email,
     name: r.name,
+    emailNotificationsEnabled: Boolean(r.email_notifications_enabled),
   }));
 }

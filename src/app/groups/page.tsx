@@ -1,45 +1,27 @@
 import { OrgSettingsShell } from "@/components/sites/training-platform/shared/OrgSettingsShell";
-import { getUserGroups } from "@/lib/queries/groups";
+import { GroupsClient } from "@/components/sites/training-platform/shared/GroupsClient";
+import { getAllGroupMemberIds, getUserGroups } from "@/lib/queries/groups";
+import { getOrgUsers } from "@/lib/queries/users";
 import { CURRENT_ORG_ID, requireAdmin } from "@/lib/current-viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function GroupsPage() {
   await requireAdmin();
-  const groups = await getUserGroups(CURRENT_ORG_ID);
+  const [groups, orgUsers] = await Promise.all([
+    getUserGroups(CURRENT_ORG_ID),
+    getOrgUsers(CURRENT_ORG_ID),
+  ]);
+  const groupsWithMembers = await Promise.all(
+    groups.map(async (g) => ({
+      ...g,
+      memberIds: (await getAllGroupMemberIds(Number(g.id))).map(String),
+    }))
+  );
 
   return (
     <OrgSettingsShell active="使用者群組" breadcrumbExtra="使用者群組">
-      <p className="mb-6 text-sm text-[#5B6270]">
-        您可以對使用者群組使用存取限制功能。{" "}
-        <a href="#" target="_blank" rel="noreferrer" className="text-brand hover:underline">
-          （幫助）
-        </a>
-      </p>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-app-border text-left text-[#8B93A1]">
-            <th className="pb-3 font-medium">使用者群組名稱</th>
-            <th className="pb-3 font-medium">使用者群組描述</th>
-            <th className="pb-3 font-medium">操作</th>
-          </tr>
-        </thead>
-        {groups.length > 0 && (
-          <tbody>
-            {groups.map((g) => (
-              <tr key={g.id} className="border-b border-app-border">
-                <td className="py-3 text-[#2B2C2F]">{g.name}</td>
-                <td className="py-3 text-[#5B6270]">{g.description || "—"}</td>
-                <td className="py-3 text-[#8B93A1]">···</td>
-              </tr>
-            ))}
-          </tbody>
-        )}
-      </table>
-      {groups.length === 0 && <div className="py-20 text-center text-sm text-[#8B93A1]">沒有數據</div>}
-      <button className="mt-6 rounded-lg bg-brand px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-dark">
-        新用戶群組
-      </button>
+      <GroupsClient groups={groupsWithMembers} allUsers={orgUsers.members} />
     </OrgSettingsShell>
   );
 }

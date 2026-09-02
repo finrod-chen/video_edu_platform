@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) NOT NULL UNIQUE,
   role VARCHAR(100) DEFAULT '員工',
   avatar_color VARCHAR(20) DEFAULT '#64748B',
-  status ENUM('active','invited') NOT NULL DEFAULT 'active',
+  status ENUM('active','invited','disabled') NOT NULL DEFAULT 'active',
+  email_notifications_enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -221,18 +222,26 @@ CREATE TABLE IF NOT EXISTS manual_step_acknowledgments (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 指派：管理員/編輯指定員工研讀整本手冊。
+-- 指派：管理員/編輯指定員工研讀整本手冊，或整個課程（scope 決定看 manual_id 還是 course_id）。
+-- 群組指派不在這張表留痕跡：建立當下就把群組成員展開成個別 assignment_targets 列
+-- （見 src/lib/queries/groups.ts 的 getUserGroupMembers + assignments API），
+-- 指派紀錄本身是成員名單的快照，之後有人異動群組不會影響已經指派過的紀錄。
 CREATE TABLE IF NOT EXISTS assignments (
   id INT PRIMARY KEY AUTO_INCREMENT,
   org_id INT NOT NULL,
-  manual_id INT NOT NULL,
+  scope ENUM('manual','course') NOT NULL DEFAULT 'manual',
+  manual_id INT NULL,
+  course_id INT NULL,
   assigned_by INT NOT NULL,
   due_date DATE NULL,
   note VARCHAR(500) NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE,
   FOREIGN KEY (manual_id) REFERENCES manuals(id) ON DELETE CASCADE,
-  FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_assignments_manual (manual_id),
+  INDEX idx_assignments_course (course_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS assignment_targets (
